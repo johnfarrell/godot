@@ -1,0 +1,27 @@
+#modelmaker / SCsub
+
+Import('env')
+
+sources = [
+    "register_types.cpp",
+    "loaders/sdf_loader.cpp",
+    "sdf_core.cpp",
+    "modelmaker.cpp",
+    "mesh_maker.cpp",
+    "types/collada_core.cpp",
+    "types/gltf_core.cpp",
+    "types/obj_core.cpp",
+    "types/stl_core.cpp",
+]
+
+env.add_source_files(env.modules_sources, sources)
+# env_modelmaker.Append(CCFLAGS=['-fPIC'])
+# env_modelmaker['LIBS'] = []
+
+# # Define shared library
+# shared_lib = env_modelmaker.SharedLibrary(target='#bin/modelmaker', source=sources)
+
+# #
+# shared_lib_shim = shared_lib[0].name.rsplit('.', 1)[0]
+# env.Append(LIBS=[shared_lib_shim])
+# env.Append(LIBPATH=['#bin'])
