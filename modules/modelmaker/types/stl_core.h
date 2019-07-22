@@ -3,13 +3,13 @@
 
 #include "scene/3d/mesh_instance.h"
 
-class STLCore {
+class STL {
 
 public:
-    STLCore();
-    ~STLCore();
+	STL();
+	~STL();
 
-    bool parse(String file_path);
+	bool load(String p_file);
 };
 
 #endif // STL_CORE_H

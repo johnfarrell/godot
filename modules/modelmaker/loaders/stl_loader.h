@@ -1,13 +1,13 @@
 /* stl_loader.h */
-#ifndef SDF_LOADER_H
-#define SDF_LOADER_H
+#ifndef STL_LOADER_H
+#define STL_LOADER_H
 
 #include "core/io/resource_loader.h"
 
 #include "../mesh_maker.h"
-#include "../types/sdf_core.h"
+#include "../types/stl_core.h"
 
-class ResourceFormatLoaderSDF : public ResourceFormatLoader {
+class ResourceFormatLoaderSTL : public ResourceFormatLoader {
 private:
 public:
 	virtual RES load(const String &p_path, const String &p_original_path, Error *r_error = NULL);
@@ -15,8 +15,8 @@ public:
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
 
-	ResourceFormatLoaderSDF();
-	virtual ~ResourceFormatLoaderSDF();
+	ResourceFormatLoaderSTL();
+	virtual ~ResourceFormatLoaderSTL();
 };
 
-#endif // SDF_LOADER_H
+#endif // STL_LOADER_H

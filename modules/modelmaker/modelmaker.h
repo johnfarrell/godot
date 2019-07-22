@@ -3,7 +3,7 @@
 #ifndef MODELMAKER_H
 #define MODELMAKER_H
 
-#include "sdf_core.h"
+#include "types/sdf_core.h"
 #include "mesh_maker.h"
 
 #include "core/node_path.h"

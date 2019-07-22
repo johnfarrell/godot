@@ -5,9 +5,9 @@ Import('env')
 sources = [
     "register_types.cpp",
     "loaders/sdf_loader.cpp",
-    "sdf_core.cpp",
     "modelmaker.cpp",
     "mesh_maker.cpp",
+    "types/sdf_core.cpp",
     "types/collada_core.cpp",
     "types/gltf_core.cpp",
     "types/obj_core.cpp",

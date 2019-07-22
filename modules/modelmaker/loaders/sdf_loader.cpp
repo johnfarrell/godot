@@ -1,16 +1,11 @@
 /* sdf_loader.cpp */
 
 #include "sdf_loader.h"
-#include "../sdf.h"
 
 
 ResourceFormatLoaderSDF::ResourceFormatLoaderSDF() {
-	sdf_handler = memnew(SDFCore);
-	mesh_maker = memnew(MeshMaker);
 }
 ResourceFormatLoaderSDF::~ResourceFormatLoaderSDF() {
-	memdelete(sdf_handler);
-	memdelete(mesh_maker);
 }
 
 RES ResourceFormatLoaderSDF::load(const String &p_path, const String &p_original_path, Error *r_error) {

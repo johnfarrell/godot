@@ -2,12 +2,12 @@
 
 #include "stl_core.h"
 
-STLCore::STLCore() {
+STL::STL() {
 }
 
-STLCore::~STLCore() {
+STL::~STL() {
 }
 
-bool STLCore::parse(String file_path) {
-    return false;
+bool STL::load(String p_file) {
+	return false;
 }
