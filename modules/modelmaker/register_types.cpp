@@ -4,9 +4,9 @@
 
 #include "core/class_db.h"
 
-#include "modelmaker.h"
-#include "mesh_maker.h"
 #include "loaders/sdf_loader.h"
+#include "mesh_maker.h"
+#include "modelmaker.h"
 
 // Register STL and its loader
 static ResourceFormatLoaderSDF *sdf_loader = NULL;
@@ -14,6 +14,7 @@ static ResourceFormatLoaderSDF *sdf_loader = NULL;
 // Register main model maker
 void register_modelmaker_types() {
 	ClassDB::register_class<ModelMaker>();
+	ClassDB::register_class<MeshMaker>();
 
 #ifdef TOOLS_ENABLED
 	sdf_loader = memnew(ResourceFormatLoaderSDF);

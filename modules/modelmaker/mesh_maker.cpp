@@ -3,7 +3,7 @@
 #include "mesh_maker.h"
 
 MeshMaker::MeshMaker() {
-    stl_handler = memnew(STLCore);
+    stl_handler = memnew(STL);
     obj_handler = memnew(OBJCore);
     collada_handler = memnew(ColladaCore);
     gltf_handler = memnew(GLTFCore);

@@ -17,7 +17,7 @@ protected:
 	static void _bind_methods();
 
 private:
-    STLCore *stl_handler;
+    STL *stl_handler;
     OBJCore *obj_handler;
     ColladaCore *collada_handler;
     GLTFCore *gltf_handler;
