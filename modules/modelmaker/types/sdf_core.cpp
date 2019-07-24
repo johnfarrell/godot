@@ -41,13 +41,14 @@ bool SDFCore::load(std::string p_file) {
 	// The actual definition of the function is sdf::readFile(std::string) (Found in sdformat/include/parser.hh:57) 
 	// and the linker is looking for incorrect version.
 	// I believe this is due to the different ABIs used by the SDFormat lib and Godot.  I reached out to the developers
-	// and Godot uses C++98/03, while SDFormat uses either C++11 or C++14, its hard to determine looking through the
+	// and Godot uses C++03, while SDFormat uses either C++11 or C++14, its hard to determine looking through the
 	// Makefiles.
 	// They introduced different implementations of std:string in GCC 5.x to conform to C++11 standards, and I believe
 	// this is where the issue is.
-	// The developers are currently in the process of porting the codebase to C++11, but it looks like it wont
+	// The developers of Godot are currently in the process of porting the codebase to C++11, but it looks like it wont
 	// be officially supported until 3.2 is released according to
 	// https://github.com/godotengine/godot/commit/5dae2ea777da5395cf1b1e9a8bc6abc93f6ae6bb
+	// I have merged those changes into my build to try to get it to work but it doesnt seem to want to work.
 	//
 	// I tried the fix suggested at https://gcc.gnu.org/onlinedocs/gcc-5.2.0/libstdc++/manual/manual/using_dual_abi.html
 	// but it seems thats mainly for code that uses C++11 linking to older code, not older code linking to C++11.
