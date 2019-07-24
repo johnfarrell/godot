@@ -55,9 +55,15 @@ bool SDFCore::load(std::string p_file) {
 	//
 	// I've tried rebuilding both SDFormat and Godot various times with different std versions, but haven't figured it out yet.
 
-	// sdf::SDFPtr sdf = sdf::readFile((std::__cxx11::string) p_file);
+	sdf::SDFPtr sdf = sdf::readFile(p_file);
 	return false;
 }
 
 void SDFCore::_bind_methods() {
+	// ClassDB::bind_method(D_METHOD("load", "p_file"), &SDFCore::load);
+
+	ClassDB::bind_method(D_METHOD("get_models"), &SDFCore::get_models);
+	ClassDB::bind_method(D_METHOD("get_worlds"), &SDFCore::get_worlds);
+	ClassDB::bind_method(D_METHOD("get_actors"), &SDFCore::get_actors);
+	ClassDB::bind_method(D_METHOD("get_lights"), &SDFCore::get_lights);
 }
