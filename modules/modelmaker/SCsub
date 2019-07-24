@@ -5,6 +5,7 @@ Import('env')
 sources = [
     "register_types.cpp",
     "loaders/sdf_loader.cpp",
+    "loaders/stl_loader.cpp",
     "modelmaker.cpp",
     "mesh_maker.cpp",
     "types/sdf_core.cpp",
@@ -14,7 +15,14 @@ sources = [
     "types/stl_core.cpp",
 ]
 
-env.add_source_files(env.modules_sources, sources)
+env_modelmaker = env.Clone()
+
+
+
+env_modelmaker.add_source_files(env.modules_sources, sources)
+env_modelmaker.Append(CPPPATH=["sdformat/include", "ign-math/include"])
+env_modelmaker.Append(LIBPATH=['libs'])
+env_modelmaker.Append(LIBS=['sdformat_static'])
 # env_modelmaker.Append(CCFLAGS=['-fPIC'])
 # env_modelmaker['LIBS'] = []
 

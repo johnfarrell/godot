@@ -1,0 +1,33 @@
+// Automatically generated
+ #include <sdf/Assert.hh>
+ #include <sdf/Atmosphere.hh>
+ #include <sdf/Box.hh>
+ #include <sdf/Collision.hh>
+ #include <sdf/Console.hh>
+ #include <sdf/Cylinder.hh>
+ #include <sdf/Element.hh>
+ #include <sdf/Error.hh>
+ #include <sdf/Exception.hh>
+ #include <sdf/Filesystem.hh>
+ #include <sdf/Geometry.hh>
+ #include <sdf/Gui.hh>
+ #include <sdf/Joint.hh>
+ #include <sdf/JointAxis.hh>
+ #include <sdf/Light.hh>
+ #include <sdf/Link.hh>
+ #include <sdf/Material.hh>
+ #include <sdf/Mesh.hh>
+ #include <sdf/Model.hh>
+ #include <sdf/Param.hh>
+ #include <sdf/parser.hh>
+ #include <sdf/Physics.hh>
+ #include <sdf/Plane.hh>
+ #include <sdf/Root.hh>
+ #include <sdf/SDFImpl.hh>
+ #include <sdf/Sphere.hh>
+ #include <sdf/Types.hh>
+ #include <sdf/system_util.hh>
+ #include <sdf/Visual.hh>
+ #include <sdf/World.hh>
+
+#include <sdf/sdf_config.h>
