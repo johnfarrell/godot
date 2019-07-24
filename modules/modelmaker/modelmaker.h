@@ -18,8 +18,9 @@ protected:
 	static void _bind_methods();
 
 private:
-	NodePath parent_node;
-	MeshMaker mesh_handler;
+	NodePath _parent_node;
+	MeshMaker *_mesh_handler;
+	SDFCore *_sdf_handler;
 
 public:
 	ModelMaker();
@@ -29,6 +30,7 @@ public:
 
 	void set_parent(const NodePath par_node);
 	void create_model(const String file_path);
+	void get_mesh();
 };
 
 #endif // MODELMAKER_H

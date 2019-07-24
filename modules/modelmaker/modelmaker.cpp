@@ -2,20 +2,30 @@
 
 #include "modelmaker.h"
 
+
 ModelMaker::ModelMaker() {
+	this->_mesh_handler = memnew(MeshMaker);
+	this->_sdf_handler = memnew(SDFCore);
 	// Nothing to do yet
 }
-ModelMaker::~ModelMaker() {}
+ModelMaker::~ModelMaker() {
+	memdelete(this->_mesh_handler);
+	memdelete(this->_sdf_handler);
+}
 
 ModelMaker::ModelMaker(const NodePath par_node) {
-	parent_node = par_node;
+	_parent_node = par_node;
 }
 
 void ModelMaker::set_parent(const NodePath par_node) {
-	parent_node = par_node;
+	_parent_node = par_node;
 }
 
 void ModelMaker::create_model(const String file_path) {
+}
+
+void ModelMaker::get_mesh() {
+	// return (*_mesh_handler).mesh;
 }
 
 void ModelMaker::_bind_methods() {

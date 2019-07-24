@@ -17,12 +17,14 @@ protected:
 	static void _bind_methods();
 
 private:
-    STL *stl_handler;
-    OBJCore *obj_handler;
-    ColladaCore *collada_handler;
-    GLTFCore *gltf_handler;
+    STL *_stl_handler;
+    OBJCore *_obj_handler;
+    ColladaCore *_collada_handler;
+    GLTFCore *_gltf_handler;
 
 public:
+    MeshInstance mesh;
+
     MeshMaker();
     ~MeshMaker();
 

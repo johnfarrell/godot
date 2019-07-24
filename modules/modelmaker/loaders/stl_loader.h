@@ -4,7 +4,6 @@
 
 #include "core/io/resource_loader.h"
 
-#include "../mesh_maker.h"
 #include "../types/stl_core.h"
 
 class ResourceFormatLoaderSTL : public ResourceFormatLoader {

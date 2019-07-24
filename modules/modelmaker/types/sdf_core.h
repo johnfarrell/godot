@@ -1,12 +1,14 @@
-#ifndef SDF_H
-#define SDF_H
+#ifndef SDF_CORE_H
+#define SDF_CORE_H
 
 #include "core/array.h"
 #include "core/resource.h"
 #include "core/variant.h"
 
-class SDF : public Resource {
-	GDCLASS(SDF, Resource);
+#include <string>
+
+class SDFCore : public Resource {
+	GDCLASS(SDFCore, Resource);
 
 protected:
 	static void _bind_methods();
@@ -20,15 +22,15 @@ private:
 	const String source_file;
 
 public:
-	bool load(String p_file);
+	bool load(std::string p_file);
 
 	Array get_models();
 	Array get_worlds();
 	Array get_actors();
 	Array get_lights();
 
-	SDF();
-	~SDF();
+	SDFCore();
+	~SDFCore();
 };
 
-#endif // STL_H
+#endif // SDF_CORE_H

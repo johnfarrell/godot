@@ -4,7 +4,6 @@
 
 #include "core/io/resource_loader.h"
 
-#include "../mesh_maker.h"
 #include "../types/sdf_core.h"
 
 class ResourceFormatLoaderSDF : public ResourceFormatLoader {

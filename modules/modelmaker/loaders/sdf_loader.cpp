@@ -9,11 +9,11 @@ ResourceFormatLoaderSDF::~ResourceFormatLoaderSDF() {
 }
 
 RES ResourceFormatLoaderSDF::load(const String &p_path, const String &p_original_path, Error *r_error) {
-	SDF *my = memnew(SDF);
+	SDFCore *my = memnew(SDFCore);
 	if (r_error)
 		*r_error = OK;
 
-	return Ref<SDF>(my);
+	return Ref<SDFCore>(my);
 }
 
 void ResourceFormatLoaderSDF::get_recognized_extensions(List<String> *p_extensions) const {
