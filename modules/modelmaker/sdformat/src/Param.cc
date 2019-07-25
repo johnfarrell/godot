@@ -13,25 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
+*/
+/* Desc: Parameter class
+ * Author: Nate Koenig
+ * Date: 14 Aug 2008
  */
 
-#include <algorithm>
-#include <cstdint>
-#include <sstream>
-#include <string>
-
-#include <locale.h>
 #include <math.h>
-
-#include "sdf/Assert.hh"
 #include "sdf/Param.hh"
-#include "sdf/Types.hh"
 
 using namespace sdf;
 
+class string_set : public boost::static_visitor<>
+{
+  public: string_set(const std::string &_value)
+          {this->value = _value;}
+
+  public: template <typename T>
+          void operator()(T & _operand) const
+          {
+            _operand = boost::lexical_cast<T>(this->value);
+          }
+  public: std::string value;
+};
+
 class any_set : public boost::static_visitor<>
 {
-  public: explicit any_set(const boost::any &_value)
+  public: any_set(const boost::any &_value)
           {this->value = _value;}
 
   public: template <typename T>
@@ -46,16 +54,51 @@ class any_set : public boost::static_visitor<>
 Param::Param(const std::string &_key, const std::string &_typeName,
              const std::string &_default, bool _required,
              const std::string &_description)
-  : dataPtr(new ParamPrivate)
 {
-  this->dataPtr->key = _key;
-  this->dataPtr->required = _required;
-  this->dataPtr->typeName = _typeName;
-  this->dataPtr->description = _description;
-  this->dataPtr->set = false;
+  this->key = _key;
+  this->required = _required;
+  this->typeName = _typeName;
+  this->description = _description;
+  this->set = false;
 
-  SDF_ASSERT(this->ValueFromString(_default), "Invalid parameter");
-  this->dataPtr->defaultValue = this->dataPtr->value;
+  if (this->typeName == "bool")
+    this->Init<bool>(_default);
+  else if (this->typeName == "int")
+    this->Init<int>(_default);
+  else if (this->typeName == "unsigned int")
+    this->Init<unsigned int>(_default);
+  else if (this->typeName == "double")
+    this->Init<double>(_default);
+  else if (this->typeName == "float")
+    this->Init<float>(_default);
+  else if (this->typeName == "char")
+    this->Init<char>(_default);
+  else if (this->typeName == "std::string" ||
+      this->typeName == "string")
+    this->Init<std::string>(_default);
+  else if (this->typeName == "sdf::Vector2i" ||
+      this->typeName == "vector2i")
+    this->Init<sdf::Vector2i>(_default);
+  else if (this->typeName == "sdf::Vector2d" ||
+      this->typeName == "vector2d")
+    this->Init<sdf::Vector2d>(_default);
+  else if (this->typeName == "sdf::Vector3" ||
+       this->typeName == "vector3")
+    this->Init<sdf::Vector3>(_default);
+  else if (this->typeName == "sdf::Pose" ||
+      this->typeName == "pose" || this->typeName == "Pose")
+    this->Init<sdf::Pose>(_default);
+  else if (this->typeName == "sdf::Quaternion" ||
+      this->typeName == "quaternion")
+    this->Init<sdf::Quaternion>(_default);
+  else if (this->typeName == "sdf::Time" ||
+      this->typeName == "time")
+    this->Init<sdf::Time>(_default);
+  else if (this->typeName == "sdf::Color" ||
+      this->typeName == "color")
+    this->Init<sdf::Color>(_default);
+  else
+    sdferr << "Unknown parameter type[" << this->typeName << "]\n";
 }
 
 //////////////////////////////////////////////////
@@ -64,141 +107,104 @@ Param::~Param()
 }
 
 //////////////////////////////////////////////////
-bool Param::GetAny(boost::any &_anyVal) const
+bool Param::GetAny(boost::any &_anyVal)
 {
-  if (this->IsType<int>())
+  if (typeid(int) == this->GetType())
   {
     int ret = 0;
     if (!this->Get<int>(ret))
-    {
       return false;
-    }
     _anyVal = ret;
   }
-  else if (this->IsType<std::uint64_t>())
-  {
-    uint64_t ret = 0;
-    if (!this->Get<std::uint64_t>(ret))
-    {
-      return false;
-    }
-    _anyVal = ret;
-  }
-  else if (this->IsType<double>())
+  else if (typeid(double) == this->GetType())
   {
     double ret = 0;
     if (!this->Get<double>(ret))
-    {
       return false;
-    }
     _anyVal = ret;
   }
-  else if (this->IsType<float>())
+  else if (typeid(float) == this->GetType())
   {
     float ret = 0;
     if (!this->Get<float>(ret))
-    {
       return false;
-    }
     _anyVal = ret;
   }
-  else if (this->IsType<bool>())
+  else if (typeid(bool) == this->GetType())
   {
     bool ret = false;
     if (!this->Get<bool>(ret))
-    {
       return false;
-    }
     _anyVal = ret;
   }
-  else if (this->IsType<std::string>())
+  else if (typeid(std::string) == this->GetType())
   {
     std::string ret;
     if (!this->Get<std::string>(ret))
-    {
       return false;
-    }
     _anyVal = ret;
   }
-  else if (this->IsType<unsigned int>())
+  else if (typeid(sdf::Vector3) == this->GetType())
+  {
+    sdf::Vector3 ret;
+    if (!this->Get<sdf::Vector3>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (typeid(unsigned int) == this->GetType())
   {
     unsigned int ret = 0;
     if (!this->Get<unsigned int>(ret))
-    {
       return false;
-    }
     _anyVal = ret;
   }
-  else if (this->IsType<char>())
+  else if (typeid(char) == this->GetType())
   {
     char ret = 0;
     if (!this->Get<char>(ret))
-    {
       return false;
-    }
     _anyVal = ret;
   }
-  else if (this->IsType<sdf::Time>())
+  else if (typeid(sdf::Vector2i) == this->GetType())
+  {
+    sdf::Vector2i ret;
+    if (!this->Get<sdf::Vector2i>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (typeid(sdf::Vector2d) == this->GetType())
+  {
+    sdf::Vector2d ret;
+    if (!this->Get<sdf::Vector2d>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (typeid(sdf::Pose) == this->GetType())
+  {
+    sdf::Pose ret;
+    if (!this->Get<sdf::Pose>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (typeid(sdf::Quaternion) == this->GetType())
+  {
+    sdf::Quaternion ret;
+    if (!this->Get<sdf::Quaternion>(ret))
+      return false;
+    _anyVal = ret;
+  }
+  else if (typeid(sdf::Time) == this->GetType())
   {
     sdf::Time ret;
     if (!this->Get<sdf::Time>(ret))
-    {
       return false;
-    }
     _anyVal = ret;
   }
-  else if (this->IsType<ignition::math::Color>())
+  else if (typeid(sdf::Color) == this->GetType())
   {
-    ignition::math::Color ret;
-    if (!this->Get<ignition::math::Color>(ret))
-    {
+    sdf::Color ret;
+    if (!this->Get<sdf::Color>(ret))
       return false;
-    }
-    _anyVal = ret;
-  }
-  else if (this->IsType<ignition::math::Vector3d>())
-  {
-    ignition::math::Vector3d ret;
-    if (!this->Get<ignition::math::Vector3d>(ret))
-    {
-      return false;
-    }
-    _anyVal = ret;
-  }
-  else if (this->IsType<ignition::math::Vector2i>())
-  {
-    ignition::math::Vector2i ret;
-    if (!this->Get<ignition::math::Vector2i>(ret))
-    {
-      return false;
-    }
-    _anyVal = ret;
-  }
-  else if (this->IsType<ignition::math::Vector2d>())
-  {
-    ignition::math::Vector2d ret;
-    if (!this->Get<ignition::math::Vector2d>(ret))
-    {
-      return false;
-    }
-    _anyVal = ret;
-  }
-  else if (this->IsType<ignition::math::Pose3d>())
-  {
-    ignition::math::Pose3d ret;
-    if (!this->Get<ignition::math::Pose3d>(ret))
-    {
-      return false;
-    }
-    _anyVal = ret;
-  }
-  else if (this->IsType<ignition::math::Quaterniond>())
-  {
-    ignition::math::Quaterniond ret;
-    if (!this->Get<ignition::math::Quaterniond>(ret))
-    {
-      return false;
-    }
     _anyVal = ret;
   }
   else
@@ -212,17 +218,16 @@ bool Param::GetAny(boost::any &_anyVal) const
 //////////////////////////////////////////////////
 void Param::Update()
 {
-  if (this->dataPtr->updateFunc)
+  if (this->updateFunc)
   {
     try
     {
-      boost::apply_visitor(any_set(this->dataPtr->updateFunc()),
-      this->dataPtr->value);
+      boost::apply_visitor(any_set(this->updateFunc()), this->value);
     }
-    catch(...)
+    catch(boost::bad_lexical_cast &e)
     {
       sdferr << "Unable to set value using Update for key["
-             << this->dataPtr->key << "]\n";
+        << this->key << "]\n";
     }
   }
 }
@@ -230,280 +235,102 @@ void Param::Update()
 //////////////////////////////////////////////////
 std::string Param::GetAsString() const
 {
-  std::stringstream ss;
-
-  ss << this->dataPtr->value;
-  return ss.str();
+  return boost::lexical_cast<std::string>(this->value);
 }
 
 //////////////////////////////////////////////////
 std::string Param::GetDefaultAsString() const
 {
-  std::stringstream ss;
-
-  ss << this->dataPtr->defaultValue;
-  return ss.str();
-}
-
-//////////////////////////////////////////////////
-bool Param::ValueFromString(const std::string &_value)
-{
-  std::string tmp(_value);
-  std::string lowerTmp(_value);
-  std::transform(lowerTmp.begin(), lowerTmp.end(), lowerTmp.begin(),
-      [](unsigned char c)
-      {
-        return static_cast<unsigned char>(std::tolower(c));
-      });
-
-  // "true" and "false" doesn't work properly
-  if (lowerTmp == "true")
-  {
-    tmp = "1";
-  }
-  else if (lowerTmp == "false")
-  {
-    tmp = "0";
-  }
-
-  bool isHex = lowerTmp.compare(0, 2, "0x") == 0;
-
-  try
-  {
-    // Try to use stoi and stoul for integers, and
-    // stof and stod for floating point values.
-    int numericBase = 10;
-    if (isHex)
-    {
-      numericBase = 16;
-    }
-
-    if (this->dataPtr->typeName == "bool")
-    {
-      if (lowerTmp == "true" || lowerTmp == "1")
-      {
-        this->dataPtr->value = true;
-      }
-      else if (lowerTmp == "false" || lowerTmp == "0")
-      {
-        this->dataPtr->value = false;
-      }
-      else
-      {
-        sdferr << "Invalid boolean value\n";
-        return false;
-      }
-    }
-    else if (this->dataPtr->typeName == "char")
-    {
-      this->dataPtr->value = tmp[0];
-    }
-    else if (this->dataPtr->typeName == "std::string" ||
-             this->dataPtr->typeName == "string")
-    {
-      this->dataPtr->value = tmp;
-    }
-    else if (this->dataPtr->typeName == "int")
-    {
-      this->dataPtr->value = std::stoi(tmp, nullptr, numericBase);
-    }
-    else if (this->dataPtr->typeName == "uint64_t")
-    {
-      std::stringstream ss(tmp);
-      std::uint64_t u64tmp;
-
-      ss >> u64tmp;
-      this->dataPtr->value = u64tmp;
-    }
-    else if (this->dataPtr->typeName == "unsigned int")
-    {
-      this->dataPtr->value = static_cast<unsigned int>(
-          std::stoul(tmp, nullptr, numericBase));
-    }
-    else if (this->dataPtr->typeName == "double")
-    {
-      this->dataPtr->value = std::stod(tmp);
-    }
-    else if (this->dataPtr->typeName == "float")
-    {
-      this->dataPtr->value = std::stof(tmp);
-    }
-    else if (this->dataPtr->typeName == "sdf::Time" ||
-             this->dataPtr->typeName == "time")
-    {
-      std::stringstream ss(tmp);
-      sdf::Time timetmp;
-
-      ss >> timetmp;
-      this->dataPtr->value = timetmp;
-    }
-    else if (this->dataPtr->typeName == "ignition::math::Color" ||
-             this->dataPtr->typeName == "color")
-    {
-      std::stringstream ss(tmp);
-      ignition::math::Color colortmp;
-
-      ss >> colortmp;
-      this->dataPtr->value = colortmp;
-    }
-    else if (this->dataPtr->typeName == "ignition::math::Vector2i" ||
-             this->dataPtr->typeName == "vector2i")
-    {
-      std::stringstream ss(tmp);
-      ignition::math::Vector2i vectmp;
-
-      ss >> vectmp;
-      this->dataPtr->value = vectmp;
-    }
-    else if (this->dataPtr->typeName == "ignition::math::Vector2d" ||
-             this->dataPtr->typeName == "vector2d")
-    {
-      std::stringstream ss(tmp);
-      ignition::math::Vector2d vectmp;
-
-      ss >> vectmp;
-      this->dataPtr->value = vectmp;
-    }
-    else if (this->dataPtr->typeName == "ignition::math::Vector3d" ||
-             this->dataPtr->typeName == "vector3")
-    {
-      std::stringstream ss(tmp);
-      ignition::math::Vector3d vectmp;
-
-      ss >> vectmp;
-      this->dataPtr->value = vectmp;
-    }
-    else if (this->dataPtr->typeName == "ignition::math::Pose3d" ||
-             this->dataPtr->typeName == "pose" ||
-             this->dataPtr->typeName == "Pose")
-    {
-      std::stringstream ss(tmp);
-      ignition::math::Pose3d posetmp;
-
-      ss >> posetmp;
-      this->dataPtr->value = posetmp;
-    }
-    else if (this->dataPtr->typeName == "ignition::math::Quaterniond" ||
-             this->dataPtr->typeName == "quaternion")
-    {
-      std::stringstream ss(tmp);
-      ignition::math::Quaterniond quattmp;
-
-      ss >> quattmp;
-      this->dataPtr->value = quattmp;
-    }
-    else
-    {
-      sdferr << "Unknown parameter type[" << this->dataPtr->typeName << "]\n";
-      return false;
-    }
-  }
-  // Catch invalid argument exception from std::stoi/stoul/stod/stof
-  catch(std::invalid_argument &)
-  {
-    sdferr << "Invalid argument. Unable to set value ["
-           << _value << " ] for key["
-           << this->dataPtr->key << "].\n";
-    return false;
-  }
-  // Catch out of range exception from std::stoi/stoul/stod/stof
-  catch(std::out_of_range &)
-  {
-    sdferr << "Out of range. Unable to set value ["
-           << _value << " ] for key["
-           << this->dataPtr->key << "].\n";
-    return false;
-  }
-
-  return true;
+  return boost::lexical_cast<std::string>(this->defaultValue);
 }
 
 //////////////////////////////////////////////////
 bool Param::SetFromString(const std::string &_value)
 {
-  // Under some circumstances, latin locales (es_ES or pt_BR) will return a
-  // comma for decimal position instead of a dot, making the conversion
-  // to fail. See bug #60 for more information. Force to use always C
-  setlocale(LC_NUMERIC, "C");
+  std::string str = _value;
+  boost::trim(str);
 
-  std::string str = sdf::trim(_value.c_str());
-
-  if (str.empty() && this->dataPtr->required)
+  if (str.empty() && this->required)
   {
     sdferr << "Empty string used when setting a required parameter. Key["
-           << this->GetKey() << "]\n";
+      << this->GetKey() << "]\n";
     return false;
   }
   else if (str.empty())
   {
-    this->dataPtr->value = this->dataPtr->defaultValue;
+    this->value = this->defaultValue;
     return true;
   }
 
-  if (!this->ValueFromString(str))
+  std::string tmp(str);
+  std::string lowerTmp(str);
+  boost::to_lower(lowerTmp);
+
+  // "true" and "false" doesn't work properly
+  if (lowerTmp == "true")
+    tmp = "1";
+  else if (lowerTmp == "false")
+    tmp = "0";
+
+  try
   {
-    return false;
+    boost::apply_visitor(string_set(tmp), this->value);
+  }
+  catch(boost::bad_lexical_cast &e)
+  {
+    if (str == "inf" || str == "-inf")
+    {
+      // in this case, the parser complains, but seems to assign the
+      // right values
+      sdfmsg << "INFO [sdf::Param]: boost throws when lexical casting "
+        << "inf's, but the values are usually passed through correctly\n";
+    }
+    else
+    {
+      sdferr << "Unable to set value [" <<  str
+        << "] for key[" << this->key << "]\n";
+      return false;
+    }
   }
 
-  this->dataPtr->set = true;
-  return this->dataPtr->set;
+  this->set = true;
+  return this->set;
 }
 
 //////////////////////////////////////////////////
 void Param::Reset()
 {
-  this->dataPtr->value = this->dataPtr->defaultValue;
-  this->dataPtr->set = false;
+  this->value = this->defaultValue;
+  this->set = false;
 }
 
 //////////////////////////////////////////////////
-ParamPtr Param::Clone() const
+boost::shared_ptr<Param> Param::Clone() const
 {
-  return ParamPtr(new Param(this->dataPtr->key, this->dataPtr->typeName,
-                            this->GetAsString(), this->dataPtr->required,
-                            this->dataPtr->description));
+  return boost::shared_ptr<Param>(new Param(this->key, this->typeName,
+        this->GetAsString(), this->required, this->description));
+}
+
+//////////////////////////////////////////////////
+const std::type_info &Param::GetType() const
+{
+  return this->value.type();
 }
 
 //////////////////////////////////////////////////
 const std::string &Param::GetTypeName() const
 {
-  return this->dataPtr->typeName;
+  return this->typeName;
 }
 
 /////////////////////////////////////////////////
 void Param::SetDescription(const std::string &_desc)
 {
-  this->dataPtr->description = _desc;
+  this->description = _desc;
 }
 
 /////////////////////////////////////////////////
 std::string Param::GetDescription() const
 {
-  return this->dataPtr->description;
-}
-
-/////////////////////////////////////////////////
-const std::string &Param::GetKey() const
-{
-  return this->dataPtr->key;
-}
-
-/////////////////////////////////////////////////
-bool Param::GetRequired() const
-{
-  return this->dataPtr->required;
-}
-
-/////////////////////////////////////////////////
-Param &Param::operator=(const Param &_param)
-{
-  this->dataPtr->value = _param.dataPtr->value;
-  this->dataPtr->defaultValue  = _param.dataPtr->defaultValue;
-  return *this;
-}
-
-/////////////////////////////////////////////////
-bool Param::GetSet() const
-{
-  return this->dataPtr->set;
+  return this->description;
 }

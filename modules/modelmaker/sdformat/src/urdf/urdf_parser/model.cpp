@@ -33,12 +33,11 @@
 *********************************************************************/
 
 /* Author: Wim Meeussen */
-#pragma warning(push, 0)
 
+#include <boost/algorithm/string.hpp>
 #include <vector>
 #include "urdf_parser/urdf_parser.h"
 // #include <console_bridge/console.h>
-#include <fstream>
 
 namespace urdf{
 
@@ -46,36 +45,18 @@ bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_o
 bool parseLink(Link &link, TiXmlElement *config);
 bool parseJoint(Joint &joint, TiXmlElement *config);
 
-ModelInterfaceSharedPtr  parseURDFFile(const std::string &path)
+boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
 {
-    std::ifstream stream( path.c_str() );
-    if (!stream)
-    {
-      return ModelInterfaceSharedPtr();
-    }
-
-    std::string xml_str((std::istreambuf_iterator<char>(stream)),
-	                     std::istreambuf_iterator<char>());
-    return urdf::parseURDF( xml_str );
-}
-
-ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
-{
-  ModelInterfaceSharedPtr model(new ModelInterface);
+  boost::shared_ptr<ModelInterface> model(new ModelInterface);
   model->clear();
 
   TiXmlDocument xml_doc;
   xml_doc.Parse(xml_string.c_str());
-  if (xml_doc.Error())
-  {
-    xml_doc.ClearError();
-    model.reset();
-    return model;
-  }
 
   TiXmlElement *robot_xml = xml_doc.FirstChildElement("robot");
   if (!robot_xml)
   {
+    //logError("Could not find the 'robot' element in the xml file");
     model.reset();
     return model;
   }
@@ -84,6 +65,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   const char *name = robot_xml->Attribute("name");
   if (!name)
   {
+    //logError("No name given for the robot.");
     model.reset();
     return model;
   }
@@ -92,13 +74,14 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   // Get all Material elements
   for (TiXmlElement* material_xml = robot_xml->FirstChildElement("material"); material_xml; material_xml = material_xml->NextSiblingElement("material"))
   {
-    MaterialSharedPtr material;
+    boost::shared_ptr<Material> material;
     material.reset(new Material);
 
     try {
       parseMaterial(*material, material_xml, false); // material needs to be fully defined here
       if (model->getMaterial(material->name))
       {
+        //logError("material '%s' is not unique.", material->name.c_str());
         material.reset();
         model.reset();
         return model;
@@ -106,9 +89,11 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
       else
       {
         model->materials_.insert(make_pair(material->name,material));
+        //logDebug("successfully added a new material '%s'", material->name.c_str());
       }
     }
-    catch (ParseError &/*e*/) {
+    catch (ParseError &e) {
+      //logError("material xml is not initialized correctly");
       material.reset();
       model.reset();
       return model;
@@ -118,35 +103,40 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   // Get all Link elements
   for (TiXmlElement* link_xml = robot_xml->FirstChildElement("link"); link_xml; link_xml = link_xml->NextSiblingElement("link"))
   {
-    LinkSharedPtr link;
+    boost::shared_ptr<Link> link;
     link.reset(new Link);
 
     try {
       parseLink(*link, link_xml);
       if (model->getLink(link->name))
       {
+        //logError("link '%s' is not unique.", link->name.c_str());
         model.reset();
         return model;
       }
       else
       {
         // set link visual material
+        //logDebug("setting link '%s' material", link->name.c_str());
         if (link->visual)
         {
           if (!link->visual->material_name.empty())
           {
             if (model->getMaterial(link->visual->material_name))
             {
+              //logDebug("setting link '%s' material to '%s'", link->name.c_str(),link->visual->material_name.c_str());
               link->visual->material = model->getMaterial( link->visual->material_name.c_str() );
             }
             else
             {
               if (link->visual->material)
               {
+                //logDebug("link '%s' material '%s' defined in Visual.", link->name.c_str(),link->visual->material_name.c_str());
                 model->materials_.insert(make_pair(link->visual->material->name,link->visual->material));
               }
               else
               {
+                //logError("link '%s' material '%s' undefined.", link->name.c_str(),link->visual->material_name.c_str());
                 model.reset();
                 return model;
               }
@@ -155,14 +145,17 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
         }
 
         model->links_.insert(make_pair(link->name,link));
+        //logDebug("successfully added a new link '%s'", link->name.c_str());
       }
     }
-    catch (ParseError &/*e*/) {
+    catch (ParseError &e) {
+      //logError("link xml is not initialized correctly");
       model.reset();
       return model;
     }
   }
   if (model->links_.empty()){
+    //logError("No link elements found in urdf file");
     model.reset();
     return model;
   }
@@ -170,23 +163,26 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   // Get all Joint elements
   for (TiXmlElement* joint_xml = robot_xml->FirstChildElement("joint"); joint_xml; joint_xml = joint_xml->NextSiblingElement("joint"))
   {
-    JointSharedPtr joint;
+    boost::shared_ptr<Joint> joint;
     joint.reset(new Joint);
 
     if (parseJoint(*joint, joint_xml))
     {
       if (model->getJoint(joint->name))
       {
+        //logError("joint '%s' is not unique.", joint->name.c_str());
         model.reset();
         return model;
       }
       else
       {
         model->joints_.insert(make_pair(joint->name,joint));
+        //logDebug("successfully added a new joint '%s'", joint->name.c_str());
       }
     }
     else
     {
+      //logError("joint xml is not initialized correctly");
       model.reset();
       return model;
     }
@@ -205,6 +201,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   }
   catch(ParseError &e)
   {
+    //logError("Failed to build tree: %s", e.what());
     model.reset();
     return model;
   }
@@ -216,6 +213,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   }
   catch(ParseError &e)
   {
+    //logError("Failed to find root link: %s", e.what());
     model.reset();
     return model;
   }
@@ -226,39 +224,26 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
 bool exportMaterial(Material &material, TiXmlElement *config);
 bool exportLink(Link &link, TiXmlElement *config);
 bool exportJoint(Joint &joint, TiXmlElement *config);
-TiXmlDocument*  exportURDF(const ModelInterface &model)
+TiXmlDocument*  exportURDF(boost::shared_ptr<ModelInterface> &model)
 {
   TiXmlDocument *doc = new TiXmlDocument();
 
   TiXmlElement *robot = new TiXmlElement("robot");
-  robot->SetAttribute("name", model.name_);
+  robot->SetAttribute("name", model->name_);
   doc->LinkEndChild(robot);
 
-
-  for (std::map<std::string, MaterialSharedPtr>::const_iterator m=model.materials_.begin(); m!=model.materials_.end(); m++)
-  {
-    exportMaterial(*(m->second), robot);
-  }
-
-  for (std::map<std::string, LinkSharedPtr>::const_iterator l=model.links_.begin(); l!=model.links_.end(); l++)  
-  {
+  for (std::map<std::string, boost::shared_ptr<Link> >::const_iterator l=model->links_.begin(); l!=model->links_.end(); l++)  
     exportLink(*(l->second), robot);
-  }
-  	
-  for (std::map<std::string, JointSharedPtr>::const_iterator j=model.joints_.begin(); j!=model.joints_.end(); j++)  
+
+  for (std::map<std::string, boost::shared_ptr<Joint> >::const_iterator j=model->joints_.begin(); j!=model->joints_.end(); j++)  
   {
+    //logDebug("exporting joint [%s]\n",j->second->name.c_str());
     exportJoint(*(j->second), robot);
   }
 
   return doc;
 }
-    
-TiXmlDocument*  exportURDF(ModelInterfaceSharedPtr &model)
-{
-  return exportURDF(*model);
-}
 
 
 }
 
-#pragma warning(pop)

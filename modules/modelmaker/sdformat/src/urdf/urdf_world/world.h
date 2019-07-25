@@ -35,7 +35,7 @@
 /* Author: John Hsu */
 
 /* encapsulates components in a world
-   see http://ros.org/wiki/usdf/XML/urdf_world
+   see http://ros.org/wiki/urml/XML/urdf_world and
    for details
 */
 /* example world XML
@@ -70,27 +70,29 @@
 #ifndef USDF_STATE_H
 #define USDF_STATE_H
 
+#include "visible.h"
 #include <string>
 #include <vector>
 #include <map>
 #include <tinyxml.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 #include "urdf_model/model.h"
 #include "urdf_model/pose.h"
 #include "urdf_model/twist.h"
-#include "urdf_world/types.h"
 
 namespace urdf{
 
-class Entity
+class SDFORMAT_HIDDEN Entity
 {
 public:
-  ModelInterfaceSharedPtr model;
+  boost::shared_ptr<ModelInterface> model;
   Pose origin;
   Twist twist;
 };
 
-class World
+class SDFORMAT_HIDDEN World
 {
 public:
   World() { this->clear(); };

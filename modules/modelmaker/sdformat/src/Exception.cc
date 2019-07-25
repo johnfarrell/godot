@@ -14,11 +14,12 @@
  * limitations under the License.
  *
  */
+/*
+ * Desc: Gazebo Error
+ * Author: Nathan Koenig
+ * Date: 07 May 2007
+ */
 
-#include <cstdint>
-#include <string>
-
-#include "sdf/ExceptionPrivate.hh"
 #include "sdf/Console.hh"
 #include "sdf/Exception.hh"
 
@@ -26,27 +27,16 @@ using namespace sdf;
 
 //////////////////////////////////////////////////
 Exception::Exception()
-  : dataPtr(new ExceptionPrivate)
 {
 }
 
 //////////////////////////////////////////////////
-Exception::Exception(const char *_file, std::int64_t _line, std::string _msg)
-  : dataPtr(new ExceptionPrivate)
+Exception::Exception(const char *_file, int _line, std::string _msg)
 {
-  this->dataPtr->file = _file;
-  this->dataPtr->line = _line;
-  this->dataPtr->str = _msg;
+  this->file = _file;
+  this->line = _line;
+  this->str = _msg;
   this->Print();
-}
-
-//////////////////////////////////////////////////
-Exception::Exception(const Exception &_e)
-  : dataPtr(new ExceptionPrivate)
-{
-  this->dataPtr->file = _e.dataPtr->file;
-  this->dataPtr->line = _e.dataPtr->line;
-  this->dataPtr->str = _e.dataPtr->str;
 }
 
 //////////////////////////////////////////////////
@@ -58,20 +48,19 @@ Exception::~Exception()
 void Exception::Print() const
 {
   sdf::Console::Instance()->ColorMsg("Exception",
-      this->dataPtr->file,
-      static_cast<unsigned int>(this->dataPtr->line), 31) << *this;
+      this->file, this->line, 31) << *this << "\n";
 }
 
 //////////////////////////////////////////////////
 std::string Exception::GetErrorFile() const
 {
-  return this->dataPtr->file;
+  return this->file;
 }
 
 //////////////////////////////////////////////////
 std::string Exception::GetErrorStr() const
 {
-  return this->dataPtr->str;
+  return this->str;
 }
 
 //////////////////////////////////////////////////
@@ -80,7 +69,7 @@ InternalError::InternalError()
 }
 
 //////////////////////////////////////////////////
-InternalError::InternalError(const char *_file, std::int64_t _line,
+InternalError::InternalError(const char *_file, int _line,
                              const std::string _msg) :
   Exception(_file, _line, _msg)
 {
@@ -93,7 +82,7 @@ InternalError::~InternalError()
 
 //////////////////////////////////////////////////
 AssertionInternalError::AssertionInternalError(
-    const char * _file, std::int64_t _line,
+    const char * _file, int _line,
     const std::string _expr,
     const std::string _function,
     const std::string _msg) :

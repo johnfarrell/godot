@@ -3,17 +3,13 @@ include (${sdf_cmake_dir}/SDFUtils.cmake)
 set (headers
   Assert.hh
   Console.hh
-  Element.hh
-  Error.hh
+  Converter.hh
   Exception.hh
-  Filesystem.hh
   Param.hh
   parser.hh
-  Root.hh
   SDFImpl.hh
   Types.hh
   system_util.hh
-  World.hh
 )
 
 set (sdf_headers "" CACHE INTERNAL "SDF headers" FORCE)

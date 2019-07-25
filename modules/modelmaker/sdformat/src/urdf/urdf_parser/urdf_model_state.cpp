@@ -33,17 +33,15 @@
 *********************************************************************/
 
 /* Author: John Hsu */
-#pragma warning(push, 0)
+
 
 #include <urdf_model_state/model_state.h>
-#include <urdf_model/utils.h>
 #include <fstream>
 #include <sstream>
-#include <stdexcept>
-#include <string>
+#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <tinyxml.h>
-// #include <console_bridge/console.h>
+//#include <console_bridge/console.h>
 
 namespace urdf{
 
@@ -54,6 +52,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
   const char *name_char = config->Attribute("name");
   if (!name_char)
   {
+    //logError("No name given for the model_state.");
     return false;
   }
   ms.name = std::string(name_char);
@@ -62,13 +61,11 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
   if (time_stamp_char)
   {
     try {
-      double sec = std::stod(time_stamp_char);
+      double sec = boost::lexical_cast<double>(time_stamp_char);
       ms.time_stamp.set(sec);
     }
-    catch (std::invalid_argument &e) {
-      return false;
-    }
-    catch (std::out_of_range &e) {
+    catch (boost::bad_lexical_cast &e) {
+      //logError("Parsing time stamp [%s] failed: %s", time_stamp_char, e.what());
       return false;
     }
   }
@@ -76,7 +73,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
   TiXmlElement *joint_state_elem = config->FirstChildElement("joint_state");
   if (joint_state_elem)
   {
-    JointStateSharedPtr joint_state;
+    boost::shared_ptr<JointState> joint_state;
     joint_state.reset(new JointState());
 
     const char *joint_char = joint_state_elem->Attribute("joint");
@@ -84,6 +81,7 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
       joint_state->joint = std::string(joint_char);
     else
     {
+      //logError("No joint name given for the model_state.");
       return false;
     }
     
@@ -93,17 +91,14 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
     {
 
       std::vector<std::string> pieces;
-      urdf::split_string( pieces, position_char, " ");
+      boost::split( pieces, position_char, boost::is_any_of(" "));
       for (unsigned int i = 0; i < pieces.size(); ++i){
         if (pieces[i] != ""){
           try {
-            joint_state->position.push_back(std::stod(pieces[i].c_str()));
+            joint_state->position.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
           }
-          catch (std::invalid_argument &/*e*/) {
+          catch (boost::bad_lexical_cast &e) {
             throw ParseError("position element ("+ pieces[i] +") is not a valid float");
-          }
-          catch (std::out_of_range &/*e*/) {
-            throw ParseError("position element ("+ pieces[i] +") is out of range");
           }
         }
       }
@@ -115,17 +110,14 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
     {
 
       std::vector<std::string> pieces;
-      urdf::split_string( pieces, velocity_char, " ");
+      boost::split( pieces, velocity_char, boost::is_any_of(" "));
       for (unsigned int i = 0; i < pieces.size(); ++i){
         if (pieces[i] != ""){
           try {
-            joint_state->velocity.push_back(std::stod(pieces[i].c_str()));
+            joint_state->velocity.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
           }
-          catch (std::invalid_argument &/*e*/) {
+          catch (boost::bad_lexical_cast &e) {
             throw ParseError("velocity element ("+ pieces[i] +") is not a valid float");
-          }
-          catch (std::out_of_range &/*e*/) {
-            throw ParseError("velocity element ("+ pieces[i] +") is out of range");
           }
         }
       }
@@ -137,17 +129,14 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
     {
 
       std::vector<std::string> pieces;
-      urdf::split_string( pieces, effort_char, " ");
+      boost::split( pieces, effort_char, boost::is_any_of(" "));
       for (unsigned int i = 0; i < pieces.size(); ++i){
         if (pieces[i] != ""){
           try {
-            joint_state->effort.push_back(std::stod(pieces[i].c_str()));
+            joint_state->effort.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
           }
-          catch (std::invalid_argument &/*e*/) {
+          catch (boost::bad_lexical_cast &e) {
             throw ParseError("effort element ("+ pieces[i] +") is not a valid float");
-          }
-          catch (std::out_of_range &/*e*/) {
-            throw ParseError("effort element ("+ pieces[i] +") is out of range");
           }
         }
       }
@@ -163,4 +152,4 @@ bool parseModelState(ModelState &ms, TiXmlElement* config)
 
 }
 
-#pragma warning(pop)
+

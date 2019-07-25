@@ -18,7 +18,6 @@
 #define _SDF_CONVERTER_HH_
 
 #include <tinyxml.h>
-
 #include <string>
 
 #include "sdf/system_util.hh"
@@ -43,7 +42,7 @@ namespace sdf
     /// \param[in] _doc SDF xml doc
     /// \param[in] _convertDoc Convert xml doc
     public: static void Convert(TiXmlDocument *_doc,
-                                TiXmlDocument *_convertDoc);
+        TiXmlDocument *_convertDoc);
     /// \endcond
 
     private: static void ConvertImpl(TiXmlElement *_elem,
@@ -62,10 +61,8 @@ namespace sdf
     /// be moved.
     /// \param[in] _moveElem A 'convert' element that describes the move
     /// operation.
-    /// \param[in] _copy True to copy the element
     private: static void Move(TiXmlElement *_elem,
-                              TiXmlElement *_moveElem,
-                              const bool _copy);
+                              TiXmlElement *_moveElem);
 
     /// \brief Add an element or attribute to an element.
     /// \param[in] _elem The element to receive the value.
@@ -73,11 +70,6 @@ namespace sdf
     /// operation.
     private: static void Add(TiXmlElement *_elem,
                              TiXmlElement *_addElem);
-
-    /// \brief Remove an element.
-    /// \param[in] _elem The element that has the _removeElem child.
-    /// \param[in] _removeElem The element to remove.
-    private: static void Remove(TiXmlElement *_elem, TiXmlElement *_removeElem);
 
     private: static const char *GetValue(const char *_valueElem,
                                          const char *_valueAttr,

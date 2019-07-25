@@ -33,17 +33,16 @@
 *********************************************************************/
 
 /* Author: Wim Meeussen */
-#pragma warning(push, 0)
+
 
 #include <urdf_parser/urdf_parser.h>
 #include <urdf_model/link.h>
 #include <fstream>
 #include <sstream>
-#include <stdexcept>
-#include <string>
+#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <tinyxml.h>
-// #include <console_bridge/console.h>
+//#include <console_bridge/console.h>
 
 namespace urdf{
 
@@ -58,6 +57,7 @@ bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_o
 
   if (!config->Attribute("name"))
   {
+    //logError("Material must contain a name attribute");
     return false;
   }
   
@@ -86,6 +86,7 @@ bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_o
       }
       catch (ParseError &e) {  
         material.color.clear();
+        //logError(std::string("Material [" + material.name + "] has malformed color rgba values: " + e.what()).c_str());
       }
     }
   }
@@ -93,6 +94,8 @@ bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_o
   if (!has_rgb && !has_filename) {
     if (!only_name_is_ok) // no need for an error if only name is ok
     {
+      //if (!has_rgb) logError(std::string("Material ["+material.name+"] color has no rgba").c_str());
+      //if (!has_filename) logError(std::string("Material ["+material.name+"] not defined in file").c_str());
     }
     return false;
   }
@@ -107,23 +110,19 @@ bool parseSphere(Sphere &s, TiXmlElement *c)
   s.type = Geometry::SPHERE;
   if (!c->Attribute("radius"))
   {
+    //logError("Sphere shape must have a radius attribute");
     return false;
   }
 
   try
   {
-    s.radius = std::stod(c->Attribute("radius"));
+    s.radius = boost::lexical_cast<double>(c->Attribute("radius"));
   }
-  catch (std::invalid_argument &e)
+  catch (boost::bad_lexical_cast &e)
   {
     std::stringstream stm;
     stm << "radius [" << c->Attribute("radius") << "] is not a valid float: " << e.what();
-    return false;
-  }
-  catch (std::out_of_range &e)
-  {
-    std::stringstream stm;
-    stm << "radius [" << c->Attribute("radius") << "] is out of range: " << e.what();
+    //logError(stm.str().c_str());
     return false;
   }
   
@@ -137,6 +136,7 @@ bool parseBox(Box &b, TiXmlElement *c)
   b.type = Geometry::BOX;
   if (!c->Attribute("size"))
   {
+    //logError("Box shape has no size attribute");
     return false;
   }
   try
@@ -146,6 +146,7 @@ bool parseBox(Box &b, TiXmlElement *c)
   catch (ParseError &e)
   {
     b.dim.clear();
+    //logError(e.what());
     return false;
   }
   return true;
@@ -159,40 +160,31 @@ bool parseCylinder(Cylinder &y, TiXmlElement *c)
   if (!c->Attribute("length") ||
       !c->Attribute("radius"))
   {
+    //logError("Cylinder shape must have both length and radius attributes");
     return false;
   }
 
   try
   {
-    y.length = std::stod(c->Attribute("length"));
+    y.length = boost::lexical_cast<double>(c->Attribute("length"));
   }
-  catch (std::invalid_argument &/*e*/)
+  catch (boost::bad_lexical_cast &e)
   {
     std::stringstream stm;
     stm << "length [" << c->Attribute("length") << "] is not a valid float";
-    return false;
-  }
-  catch (std::out_of_range &/*e*/)
-  {
-    std::stringstream stm;
-    stm << "length [" << c->Attribute("length") << "] is out of range";
+    //logError(stm.str().c_str());
     return false;
   }
 
   try
   {
-    y.radius = std::stod(c->Attribute("radius"));
+    y.radius = boost::lexical_cast<double>(c->Attribute("radius"));
   }
-  catch (std::invalid_argument &/*e*/)
+  catch (boost::bad_lexical_cast &e)
   {
     std::stringstream stm;
     stm << "radius [" << c->Attribute("radius") << "] is not a valid float";
-    return false;
-  }
-  catch (std::out_of_range &/*e*/)
-  {
-    std::stringstream stm;
-    stm << "radius [" << c->Attribute("radius") << "] is out of range";
+    //logError(stm.str().c_str());
     return false;
   }
   return true;
@@ -205,6 +197,7 @@ bool parseMesh(Mesh &m, TiXmlElement *c)
 
   m.type = Geometry::MESH;
   if (!c->Attribute("filename")) {
+    //logError("Mesh must contain a filename attribute");
     return false;
   }
 
@@ -216,6 +209,7 @@ bool parseMesh(Mesh &m, TiXmlElement *c)
     }
     catch (ParseError &e) {
       m.scale.clear();
+      //logError("Mesh scale was specified, but could not be parsed: %s", e.what());
       return false;
     }
   }
@@ -226,14 +220,15 @@ bool parseMesh(Mesh &m, TiXmlElement *c)
   return true;
 }
 
-GeometrySharedPtr parseGeometry(TiXmlElement *g)
+boost::shared_ptr<Geometry> parseGeometry(TiXmlElement *g)
 {
-  GeometrySharedPtr geom;
+  boost::shared_ptr<Geometry> geom;
   if (!g) return geom;
 
   TiXmlElement *shape = g->FirstChildElement();
   if (!shape)
   {
+    //logError("Geometry tag contains no child element.");
     return geom;
   }
 
@@ -268,10 +263,11 @@ GeometrySharedPtr parseGeometry(TiXmlElement *g)
   }
   else
   {
+    //logError("Unknown geometry type '%s'", type_name.c_str());
     return geom;
   }
   
-  return GeometrySharedPtr();
+  return boost::shared_ptr<Geometry>();
 }
 
 bool parseInertial(Inertial &i, TiXmlElement *config)
@@ -289,53 +285,51 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
   TiXmlElement *mass_xml = config->FirstChildElement("mass");
   if (!mass_xml)
   {
+    //logError("Inertial element must have a mass element");
     return false;
   }
   if (!mass_xml->Attribute("value"))
   {
+    //logError("Inertial: mass element must have value attribute");
     return false;
   }
 
   try
   {
-    i.mass = std::stod(mass_xml->Attribute("value"));
+    i.mass = boost::lexical_cast<double>(mass_xml->Attribute("value"));
   }
-  catch (std::invalid_argument &/*e*/)
+  catch (boost::bad_lexical_cast &e)
   {
     std::stringstream stm;
     stm << "Inertial: mass [" << mass_xml->Attribute("value")
         << "] is not a float";
-    return false;
-  }
-  catch (std::out_of_range &/*e*/)
-  {
-    std::stringstream stm;
-    stm << "Inertial: mass [" << mass_xml->Attribute("value")
-        << "] is out of range";
+    //logError(stm.str().c_str());
     return false;
   }
 
   TiXmlElement *inertia_xml = config->FirstChildElement("inertia");
   if (!inertia_xml)
   {
+    //logError("Inertial element must have inertia element");
     return false;
   }
   if (!(inertia_xml->Attribute("ixx") && inertia_xml->Attribute("ixy") && inertia_xml->Attribute("ixz") &&
         inertia_xml->Attribute("iyy") && inertia_xml->Attribute("iyz") &&
         inertia_xml->Attribute("izz")))
   {
+    //logError("Inertial: inertia element must have ixx,ixy,ixz,iyy,iyz,izz attributes");
     return false;
   }
   try
   {
-    i.ixx  = std::stod(inertia_xml->Attribute("ixx"));
-    i.ixy  = std::stod(inertia_xml->Attribute("ixy"));
-    i.ixz  = std::stod(inertia_xml->Attribute("ixz"));
-    i.iyy  = std::stod(inertia_xml->Attribute("iyy"));
-    i.iyz  = std::stod(inertia_xml->Attribute("iyz"));
-    i.izz  = std::stod(inertia_xml->Attribute("izz"));
+    i.ixx  = boost::lexical_cast<double>(inertia_xml->Attribute("ixx"));
+    i.ixy  = boost::lexical_cast<double>(inertia_xml->Attribute("ixy"));
+    i.ixz  = boost::lexical_cast<double>(inertia_xml->Attribute("ixz"));
+    i.iyy  = boost::lexical_cast<double>(inertia_xml->Attribute("iyy"));
+    i.iyz  = boost::lexical_cast<double>(inertia_xml->Attribute("iyz"));
+    i.izz  = boost::lexical_cast<double>(inertia_xml->Attribute("izz"));
   }
-  catch (std::invalid_argument &/*e*/)
+  catch (boost::bad_lexical_cast &e)
   {
     std::stringstream stm;
     stm << "Inertial: one of the inertia elements is not a valid double:"
@@ -345,18 +339,7 @@ bool parseInertial(Inertial &i, TiXmlElement *config)
         << " iyy [" << inertia_xml->Attribute("iyy") << "]"
         << " iyz [" << inertia_xml->Attribute("iyz") << "]"
         << " izz [" << inertia_xml->Attribute("izz") << "]";
-    return false;
-  }
-  catch (std::out_of_range &/*e*/)
-  {
-    std::stringstream stm;
-    stm << "Inertial: one of the inertia elements is out of range:"
-        << " ixx [" << inertia_xml->Attribute("ixx") << "]"
-        << " ixy [" << inertia_xml->Attribute("ixy") << "]"
-        << " ixz [" << inertia_xml->Attribute("ixz") << "]"
-        << " iyy [" << inertia_xml->Attribute("iyy") << "]"
-        << " iyz [" << inertia_xml->Attribute("iyz") << "]"
-        << " izz [" << inertia_xml->Attribute("izz") << "]";
+    //logError(stm.str().c_str());
     return false;
   }
   return true;
@@ -379,15 +362,12 @@ bool parseVisual(Visual &vis, TiXmlElement *config)
   if (!vis.geometry)
     return false;
 
-  const char *name_char = config->Attribute("name");
-  if (name_char)
-    vis.name = name_char;
-
   // Material
   TiXmlElement *mat = config->FirstChildElement("material");
   if (mat) {
     // get material name
     if (!mat->Attribute("name")) {
+      //logError("Visual material must contain a name attribute");
       return false;
     }
     vis.material_name = mat->Attribute("name");
@@ -396,9 +376,19 @@ bool parseVisual(Visual &vis, TiXmlElement *config)
     vis.material.reset(new Material());
     if (!parseMaterial(*vis.material, mat, true))
     {
+      //vis.material.reset();
+      //return false;
+      //logDebug("material has only name, actual material definition may be in the model");
     }
   }
   
+  // Group Tag (optional)
+  // collision blocks without a group tag are designated to the "default" group
+  const char *group_name_char = config->Attribute("group");
+  if (!group_name_char)
+    vis.group_name = std::string("default");
+  else
+    vis.group_name = std::string(group_name_char);
   return true;
 }
 
@@ -419,10 +409,13 @@ bool parseCollision(Collision &col, TiXmlElement* config)
   if (!col.geometry)
     return false;
 
-  const char *name_char = config->Attribute("name");
-  if (name_char)
-    col.name = name_char;
-
+  // Group Tag (optional)
+  // collision blocks without a group tag are designated to the "default" group
+  const char *group_name_char = config->Attribute("group");
+  if (!group_name_char)
+    col.group_name = std::string("default");
+  else
+    col.group_name = std::string(group_name_char);
   return true;
 }
 
@@ -434,6 +427,7 @@ bool parseLink(Link &link, TiXmlElement* config)
   const char *name_char = config->Attribute("name");
   if (!name_char)
   {
+    //logError("No name given for the link.");
     return false;
   }
   link.name = std::string(name_char);
@@ -445,6 +439,7 @@ bool parseLink(Link &link, TiXmlElement* config)
     link.inertial.reset(new Inertial());
     if (!parseInertial(*link.inertial, i))
     {
+      //logError("Could not parse inertial element for Link [%s]", link.name.c_str());
       return false;
     }
   }
@@ -453,46 +448,107 @@ bool parseLink(Link &link, TiXmlElement* config)
   for (TiXmlElement* vis_xml = config->FirstChildElement("visual"); vis_xml; vis_xml = vis_xml->NextSiblingElement("visual"))
   {
 
-    VisualSharedPtr vis;
+    boost::shared_ptr<Visual> vis;
     vis.reset(new Visual());
     if (parseVisual(*vis, vis_xml))
     {
-      link.visual_array.push_back(vis);
+      boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > viss = link.getVisuals(vis->group_name);
+      if (!viss)
+      {
+        // group does not exist, create one and add to map
+        viss.reset(new std::vector<boost::shared_ptr<Visual > >);
+        // new group name, create vector, add vector to map and add Visual to the vector
+        link.visual_groups.insert(make_pair(vis->group_name,viss));
+        //logDebug("successfully added a new visual group name '%s'",vis->group_name.c_str());
+      }
+      
+      // group exists, add Visual to the vector in the map
+      viss->push_back(vis);
+      //logDebug("successfully added a new visual under group name '%s'",vis->group_name.c_str());
     }
     else
     {
       vis.reset();
+      //logError("Could not parse visual element for Link [%s]", link.name.c_str());
       return false;
     }
   }
 
   // Visual (optional)
-  // Assign the first visual to the .visual ptr, if it exists
-  if (!link.visual_array.empty())
-    link.visual = link.visual_array[0];
-  
+  // Assign one single default visual pointer from the visual_groups map
+  link.visual.reset();
+  boost::shared_ptr<std::vector<boost::shared_ptr<Visual > > > default_visual = link.getVisuals("default");
+  if (!default_visual)
+  {
+    //("No 'default' visual group for Link '%s'", this->name.c_str());
+  }
+  else if (default_visual->empty())
+  {
+    //("'default' visual group is empty for Link '%s'", this->name.c_str());
+  }
+  else
+  {
+    if (default_visual->size() > 1)
+    {
+      //("'default' visual group has %d visuals for Link '%s', taking the first one as default",(int)default_visual->size(), this->name.c_str());
+    }
+    link.visual = (*default_visual->begin());
+  }
+
+
   // Multiple Collisions (optional)
   for (TiXmlElement* col_xml = config->FirstChildElement("collision"); col_xml; col_xml = col_xml->NextSiblingElement("collision"))
   {
-    CollisionSharedPtr col;
+    boost::shared_ptr<Collision> col;
     col.reset(new Collision());
     if (parseCollision(*col, col_xml))
     {      
-      link.collision_array.push_back(col);
+      boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > cols = link.getCollisions(col->group_name);  
+      
+      if (!cols)
+      {
+        // group does not exist, create one and add to map
+        cols.reset(new std::vector<boost::shared_ptr<Collision > >);
+        // new group name, create vector, add vector to map and add Collision to the vector
+        link.collision_groups.insert(make_pair(col->group_name,cols));
+        //logDebug("successfully added a new collision group name '%s'",col->group_name.c_str());
+      }
+
+      // group exists, add Collision to the vector in the map
+      cols->push_back(col);
+      //logDebug("successfully added a new collision under group name '%s'",col->group_name.c_str());
     }
     else
     {
       col.reset();
+      //logError("Could not parse collision element for Link [%s]",  link.name.c_str());
       return false;
     }
   }
   
-  // Collision (optional)  
-  // Assign the first collision to the .collision ptr, if it exists
-  if (!link.collision_array.empty())
-    link.collision = link.collision_array[0];
+  // Collision (optional)
+  // Assign one single default collision pointer from the collision_groups map
+  link.collision.reset();
+  boost::shared_ptr<std::vector<boost::shared_ptr<Collision > > > default_collision = link.getCollisions("default");
 
-  return true;
+  if (!default_collision)
+  {
+    //logDebug("No 'default' collision group for Link '%s'", link.name.c_str());
+  }
+  else if (default_collision->empty())
+  {
+    //logDebug("'default' collision group is empty for Link '%s'", link.name.c_str());
+  }
+  else
+  {
+    if (default_collision->size() > 1)
+    {
+      //logWarn("'default' collision group has %d collisions for Link '%s', taking the first one as default",(int)default_collision->size(), link.name.c_str());
+    }
+    link.collision = (*default_collision->begin());
+  }
+
+  return false;
 }
 
 /* exports */
@@ -554,31 +610,32 @@ bool exportMesh(Mesh &m, TiXmlElement *xml)
   return true;
 }
 
-bool exportGeometry(GeometrySharedPtr &geom, TiXmlElement *xml)
+bool exportGeometry(boost::shared_ptr<Geometry> &geom, TiXmlElement *xml)
 {
   TiXmlElement *geometry_xml = new TiXmlElement("geometry");
-  if (urdf::dynamic_pointer_cast<Sphere>(geom))
+  if (boost::dynamic_pointer_cast<Sphere>(geom))
   {
-    exportSphere((*(urdf::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
+    exportSphere((*(boost::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
   }
-  else if (urdf::dynamic_pointer_cast<Box>(geom))
+  else if (boost::dynamic_pointer_cast<Box>(geom))
   {
-    exportBox((*(urdf::dynamic_pointer_cast<Box>(geom).get())), geometry_xml);
+    exportBox((*(boost::dynamic_pointer_cast<Box>(geom).get())), geometry_xml);
   }
-  else if (urdf::dynamic_pointer_cast<Cylinder>(geom))
+  else if (boost::dynamic_pointer_cast<Cylinder>(geom))
   {
-    exportCylinder((*(urdf::dynamic_pointer_cast<Cylinder>(geom).get())), geometry_xml);
+    exportCylinder((*(boost::dynamic_pointer_cast<Cylinder>(geom).get())), geometry_xml);
   }
-  else if (urdf::dynamic_pointer_cast<Mesh>(geom))
+  else if (boost::dynamic_pointer_cast<Mesh>(geom))
   {
-    exportMesh((*(urdf::dynamic_pointer_cast<Mesh>(geom).get())), geometry_xml);
+    exportMesh((*(boost::dynamic_pointer_cast<Mesh>(geom).get())), geometry_xml);
   }
   else
   {
+    //logError("geometry not specified, I'll make one up for you!");
     Sphere *s = new Sphere();
     s->radius = 0.03;
     geom.reset(s);
-    exportSphere((*(urdf::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
+    exportSphere((*(boost::dynamic_pointer_cast<Sphere>(geom).get())), geometry_xml);
   }
 
   xml->LinkEndChild(geometry_xml);
@@ -632,6 +689,9 @@ bool exportVisual(Visual &vis, TiXmlElement *xml)
   if (vis.material)
     exportMaterial(*vis.material, visual_xml);
 
+  if (!vis.group_name.empty())
+    visual_xml->SetAttribute("group", vis.group_name);
+
   xml->LinkEndChild(visual_xml);
 
   return true;
@@ -652,6 +712,9 @@ bool exportCollision(Collision &col, TiXmlElement* xml)
 
   exportGeometry(col.geometry, collision_xml);
 
+  if (!col.group_name.empty())
+    collision_xml->SetAttribute("group", col.group_name);
+
   xml->LinkEndChild(collision_xml);
 
   return true;
@@ -662,12 +725,9 @@ bool exportLink(Link &link, TiXmlElement* xml)
   TiXmlElement * link_xml = new TiXmlElement("link");
   link_xml->SetAttribute("name", link.name);
 
-  if (link.inertial)
-    exportInertial(*link.inertial, link_xml);
-  for (std::size_t i = 0 ; i < link.visual_array.size() ; ++i)
-    exportVisual(*link.visual_array[i], link_xml);
-  for (std::size_t i = 0 ; i < link.collision_array.size() ; ++i)
-    exportCollision(*link.collision_array[i], link_xml);
+  exportInertial(*link.inertial, link_xml);
+  exportVisual(*link.visual, link_xml);
+  exportCollision(*link.collision, link_xml);
 
   xml->LinkEndChild(link_xml);
 
@@ -675,5 +735,3 @@ bool exportLink(Link &link, TiXmlElement* xml)
 }
 
 }
-
-#pragma warning(pop)

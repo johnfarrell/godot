@@ -15,52 +15,38 @@
  *
 */
 
-#ifndef SDFORMAT_PARAM_HH_
-#define SDFORMAT_PARAM_HH_
+#ifndef _SDF_PARAM_HH_
+#define _SDF_PARAM_HH_
 
-// See: https://bugreports.qt-project.org/browse/QTBUG-22829
-#ifndef Q_MOC_RUN
-  #include <boost/any.hpp>
-  #include <boost/variant.hpp>
+#ifndef Q_MOC_RUN  // See: https://bugreports.qt-project.org/browse/QTBUG-22829
+# include <boost/lexical_cast.hpp>
+# include <boost/bind.hpp>
+# include <boost/algorithm/string.hpp>
+# include <boost/variant.hpp>
+# include <boost/any.hpp>
+# include <boost/function.hpp>
+# include <boost/shared_ptr.hpp>
 #endif
 
-#include <algorithm>
-#include <cctype>
-#include <cstdint>
-#include <functional>
-#include <memory>
-#include <sstream>
-#include <string>
 #include <typeinfo>
+#include <string>
 #include <vector>
 
-#include <ignition/math.hh>
-
 #include "sdf/Console.hh"
-#include "sdf/system_util.hh"
 #include "sdf/Types.hh"
-
-#ifdef _WIN32
-// Disable warning C4251 which is triggered by
-// std::unique_ptr
-#pragma warning(push)
-#pragma warning(disable: 4251)
-#endif
+#include "sdf/system_util.hh"
 
 namespace sdf
 {
   class SDFORMAT_VISIBLE Param;
 
   /// \def ParamPtr
-  /// \brief Shared pointer to a Param
-  typedef std::shared_ptr<Param> ParamPtr;
+  /// \brief boost shared_ptr to a Param
+  typedef boost::shared_ptr<Param> ParamPtr;
 
   /// \def Param_V
-  /// \brief vector of shared pointers to a Param
+  /// \brief vector or boost shared_ptrs to a Param
   typedef std::vector<ParamPtr> Param_V;
-
-  /// \internal
-  class ParamPrivate;
 
   /// \class Param Param.hh sdf/sdf.hh
   /// \brief A parameter class
@@ -73,7 +59,6 @@ namespace sdf
     /// \param[in] _default Default value.
     /// \param[in] _required True if the parameter is required to be set.
     /// \param[in] _description Description of the parameter.
-    /// \throws sdf::AssertionInternalError if an invalid type is given.
     public: Param(const std::string &_key, const std::string &_typeName,
                   const std::string &_default, bool _required,
                   const std::string &_description = "");
@@ -98,13 +83,11 @@ namespace sdf
 
     /// \brief Get the key value.
     /// \return The key.
-    public: const std::string &GetKey() const;
+    public: const std::string &GetKey() const {return this->key;}
 
-    /// \brief Return true if the param is a particular type
-    /// \return True if the type held by this Param matches the Type
-    /// template parameter.
-    public: template<typename Type>
-            bool IsType() const;
+    /// \brief Get the type of the value stored.
+    /// \return The std::type_info.
+    public: const std::type_info &GetType() const;
 
     /// \brief Get the type name value.
     /// \return The type name.
@@ -112,21 +95,21 @@ namespace sdf
 
     /// \brief Return whether the parameter is required.
     /// \return True if the parameter is required.
-    public: bool GetRequired() const;
+    public: bool GetRequired() const {return this->required;}
 
     /// \brief Return true if the parameter has been set.
     /// \return True if the parameter has been set.
-    public: bool GetSet() const;
+    public: bool GetSet() const {return this->set;}
 
     /// \brief Clone the parameter.
     /// \return A new parameter that is the clone of this.
-    public: ParamPtr Clone() const;
+    public: boost::shared_ptr<Param> Clone() const;
 
     /// \brief Set the update function. The updateFunc will be used to
     /// set the parameter's value when Param::Update is called.
     /// \param[in] _updateFunc Function pointer to an update function.
-    public: template<typename T>
-            void SetUpdateFunc(T _updateFunc);
+    public: template<typename T> void SetUpdateFunc(T _updateFunc)
+            {this->updateFunc = _updateFunc;}
 
     /// \brief Set the parameter's value using the updateFunc.
     /// \sa Param::SetUpdateFunc
@@ -134,36 +117,97 @@ namespace sdf
 
     /// \brief Set the parameter's value.
     ///
-    /// The passed in value value must have an input and output stream operator.
+    /// The passed in value must conform to the boost::lexical_cast spec.
+    /// This means the value must have an input and output stream operator.
     /// \param[in] _value The value to set the parameter to.
     /// \return True if the value was successfully set.
     public: template<typename T>
-            bool Set(const T &_value);
+            bool Set(const T &_value)
+            {
+              try
+              {
+                this->SetFromString(boost::lexical_cast<std::string>(_value));
+              }
+              catch(...)
+              {
+                sdferr << "Unable to set parameter[" << this->key << "]."
+                       << "Type type used must have a stream input and output"
+                       << "operator, which allow boost::lexical_cast to"
+                       << "function properly.\n";
+                return false;
+              }
+              return true;
+            }
 
     /// \brief Get the value of the parameter as a boost::any.
     /// \param[out] _anyVal The boost::any object to set.
-    /// \return True if successfully fetched _anyVal, false otherwise.
-    public: bool GetAny(boost::any &_anyVal) const;
+    /// \return True if successfully set _anyVal, false otherwise.
+    public: bool GetAny(boost::any &_anyVal);
 
     /// \brief Get the value of the parameter.
     /// \param[out] _value The value of the parameter.
     /// \return True if parameter was successfully cast to the value type
     /// passed in.
     public: template<typename T>
-            bool Get(T &_value) const;
+            bool Get(T &_value)
+            {
+              try
+              {
+                if (typeid(T) == typeid(bool) && this->typeName == "string")
+                {
+                  std::string strValue =
+                    boost::lexical_cast<std::string>(this->value);
+                  if (strValue == "true" || strValue  == "1")
+                    _value = boost::lexical_cast<T>("1");
+                  else
+                    _value = boost::lexical_cast<T>("0");
+                }
+                else
+                {
+                  _value = boost::lexical_cast<T>(this->value);
+                }
+              }
+              catch(...)
+              {
+                sdferr << "Unable to convert parameter[" << this->key << "] "
+                       << "whose type is[" << this->typeName << "], to "
+                       << "type[" << typeid(T).name() << "]\n";
+                return false;
+              }
+              return true;
+            }
 
     /// \brief Get the default value of the parameter.
     /// \param[out] _value The default value of the parameter.
     /// \return True if parameter was successfully cast to the value type
     /// passed in.
     public: template<typename T>
-            bool GetDefault(T &_value) const;
+            bool GetDefault(T &_value)
+            {
+              try
+              {
+                _value = boost::lexical_cast<T>(this->defaultValue);
+              }
+              catch(...)
+              {
+                sdferr << "Unable to convert parameter[" << this->key << "] "
+                       << "whose type is[" << this->typeName << "], to "
+                       << "type[" << typeid(T).name() << "]\n";
+                return false;
+              }
+              return true;
+            }
 
     /// \brief Equal operator. Set's the value and default value from the
     /// provided Param.
     /// \param[in] _param The parameter to set values from.
     /// \return *This
-    public: Param &operator=(const Param &_param);
+    public: Param &operator =(const Param &_param)
+            {
+              this->value = _param.value;
+              this->defaultValue  = _param.defaultValue;
+              return *this;
+            }
 
     /// \brief Set the description of the parameter.
     /// \param[in] _desc New description for the parameter.
@@ -178,179 +222,71 @@ namespace sdf
     /// \param[in] _p The parameter to output.
     /// \return The output stream.
     public: friend std::ostream &operator<<(std::ostream &_out,
-                                            const Param &_p)
-    {
-      _out << _p.GetAsString();
-      return _out;
-    }
+                                             const Param &_p)
+            {
+              _out << _p.GetAsString();
+              return _out;
+            }
 
-    /// \brief Private method to set the Element from a passed-in string.
+    /// \brief Initialize the value. This is called from the constructor.
     /// \param[in] _value Value to set the parameter to.
-    private: bool ValueFromString(const std::string &_value);
+    private: template<typename T>
+            void Init(const std::string &_value)
+            {
+              try
+              {
+                this->value = boost::lexical_cast<T>(_value);
+              }
+              catch(...)
+              {
+                if (this->typeName == "bool")
+                {
+                  std::string strValue = _value;
+                  boost::algorithm::to_lower(strValue);
+                  if (strValue == "true" || strValue == "1")
+                    this->value = true;
+                  else
+                    this->value = false;
+                }
+                else
+                  sdferr << "Unable to init parameter value from string["
+                    << _value << "]\n";
+              }
 
-    /// \brief Private data
-    private: std::unique_ptr<ParamPrivate> dataPtr;
-  };
+              this->defaultValue = this->value;
+              this->set = false;
+            }
 
-  /// \internal
-  /// \brief Private data for the param class
-  class ParamPrivate
-  {
     /// \brief Key value
-    public: std::string key;
+    private: std::string key;
 
     /// \brief True if the parameter is required.
-    public: bool required;
+    private: bool required;
 
     /// \brief True if the parameter is set.
-    public: bool set;
+    private: bool set;
 
     //// \brief Name of the type.
-    public: std::string typeName;
+    private: std::string typeName;
 
     /// \brief Description of the parameter.
-    public: std::string description;
+    private: std::string description;
 
     /// \brief Update function pointer.
-    public: std::function<boost::any ()> updateFunc;
+    private: boost::function<boost::any ()> updateFunc;
 
     /// \def ParamVariant
-    /// \brief Variant type def.
-    public: typedef boost::variant<bool, char, std::string, int, std::uint64_t,
-                                   unsigned int, double, float, sdf::Time,
-                                   ignition::math::Color,
-                                   ignition::math::Vector2i,
-                                   ignition::math::Vector2d,
-                                   ignition::math::Vector3d,
-                                   ignition::math::Quaterniond,
-                                   ignition::math::Pose3d> ParamVariant;
+    /// \briead Variant type def.
+    private: typedef boost::variant<bool, char, std::string, int,
+               unsigned int, double, float, sdf::Vector3, sdf::Vector2i,
+               sdf::Vector2d, sdf::Quaternion, sdf::Pose, sdf::Color,
+               sdf::Time> ParamVariant;
 
     /// \brief This parameter's value
-    public: ParamVariant value;
+    protected: ParamVariant value;
 
     /// \brief This parameter's default value
-    public: ParamVariant defaultValue;
+    protected: ParamVariant defaultValue;
   };
-
-  ///////////////////////////////////////////////
-  template<typename T>
-  void Param::SetUpdateFunc(T _updateFunc)
-  {
-    this->dataPtr->updateFunc = _updateFunc;
-  }
-
-  ///////////////////////////////////////////////
-  template<typename T>
-  bool Param::Set(const T &_value)
-  {
-    try
-    {
-      std::stringstream ss;
-      ss << _value;
-      return this->SetFromString(ss.str());
-    }
-    catch(...)
-    {
-      sdferr << "Unable to set parameter["
-             << this->dataPtr->key << "]."
-             << "Type used must have a stream input and output operator,"
-             << "which allows proper functioning of Param.\n";
-      return false;
-    }
-  }
-
-  ///////////////////////////////////////////////
-  template<typename T>
-  bool Param::Get(T &_value) const
-  {
-    try
-    {
-      if (typeid(T) == typeid(bool) && this->dataPtr->typeName == "string")
-      {
-        std::stringstream ss;
-        ss << this->dataPtr->value;
-
-        std::string strValue;
-
-        ss >> strValue;
-        std::transform(strValue.begin(), strValue.end(), strValue.begin(),
-            [](unsigned char c)
-            {
-              return static_cast<unsigned char>(std::tolower(c));
-            });
-
-        std::stringstream tmp;
-        if (strValue == "true" || strValue  == "1")
-        {
-          tmp << "1";
-        }
-        else
-        {
-          tmp << "0";
-        }
-        tmp >> _value;
-      }
-      else if (typeid(T) == this->dataPtr->value.type())
-      {
-#if BOOST_VERSION < 105800
-        _value = boost::get<T>(this->dataPtr->value);
-#else
-        _value = boost::relaxed_get<T>(this->dataPtr->value);
-#endif
-      }
-      else
-      {
-        std::stringstream ss;
-        ss << this->dataPtr->value;
-        ss >> _value;
-      }
-    }
-    catch(...)
-    {
-      sdferr << "Unable to convert parameter["
-             << this->dataPtr->key << "] "
-             << "whose type is["
-             << this->dataPtr->typeName << "], to "
-             << "type[" << typeid(T).name() << "]\n";
-      return false;
-    }
-    return true;
-  }
-
-  ///////////////////////////////////////////////
-  template<typename T>
-  bool Param::GetDefault(T &_value) const
-  {
-    std::stringstream ss;
-
-    try
-    {
-      ss << this->dataPtr->defaultValue;
-      ss >> _value;
-    }
-    catch(...)
-    {
-      sdferr << "Unable to convert parameter["
-             << this->dataPtr->key << "] "
-             << "whose type is["
-             << this->dataPtr->typeName << "], to "
-             << "type[" << typeid(T).name() << "]\n";
-      return false;
-    }
-
-    return true;
-  }
-
-  ///////////////////////////////////////////////
-  template<typename Type>
-  bool Param::IsType() const
-  {
-    return this->dataPtr->value.type() == typeid(Type);
-  }
 }
-
-#ifdef _WIN32
-#pragma warning(pop)
-#endif
-
 #endif

@@ -17,15 +17,10 @@
 #ifndef _SDF_ASSERT_HH_
 #define _SDF_ASSERT_HH_
 
-#include "sdf/Exception.hh"
+#include <boost/assert.hpp>
 
 /// \brief This macro define the standard way of launching an exception
-/// inside SDF.
-#define SDF_ASSERT(_expr, _msg) ((!!(_expr)) ? ((void)0) : \
-                             throw sdf::AssertionInternalError(__FILE__, \
-                                                               __LINE__, \
-                                                               #_expr, \
-                                                               __FUNCTION__, \
-                                                               _msg))
+/// inside gazebo.
+#define SDF_ASSERT(_expr, _msg) BOOST_ASSERT_MSG(_expr, _msg)
 
 #endif

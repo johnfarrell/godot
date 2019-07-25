@@ -36,18 +36,18 @@
 
 #ifndef URDF_INTERFACE_COLOR_H
 #define URDF_INTERFACE_COLOR_H
+#include "visible.h"
 
-#include <stdexcept>
 #include <string>
 #include <vector>
 #include <math.h>
-
-#include <urdf_model/utils.h>
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 namespace urdf
 {
 
-class Color
+class SDFORMAT_HIDDEN Color
 {
 public:
   Color() {this->clear();};
@@ -66,19 +66,17 @@ public:
     this->clear();
     std::vector<std::string> pieces;
     std::vector<float> rgba;
-    urdf::split_string( pieces, vector_str, " ");
+    boost::split( pieces, vector_str, boost::is_any_of(" "));
     for (unsigned int i = 0; i < pieces.size(); ++i)
     {
       if (!pieces[i].empty())
       {
         try
         {
-          rgba.push_back(std::stof(pieces[i]));
+          rgba.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
         }
-        catch (std::invalid_argument &/*e*/) {
-          return false;
-        }
-        catch (std::out_of_range &/*e*/) {
+        catch (boost::bad_lexical_cast &e)
+        {
           return false;
         }
       }

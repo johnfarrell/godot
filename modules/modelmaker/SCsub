@@ -2,24 +2,26 @@
 
 Import('env')
 
-sources = [
-    "register_types.cpp",
-    "loaders/sdf_loader.cpp",
-    "loaders/stl_loader.cpp",
-    "modelmaker.cpp",
-    "mesh_maker.cpp",
-    "types/sdf_core.cpp",
-    "types/collada_core.cpp",
-    "types/gltf_core.cpp",
-    "types/obj_core.cpp",
-    "types/stl_core.cpp",
-]
+# sources = [
+#     "register_types.cpp",
+#     "loaders/sdf_loader.cpp",
+#     "loaders/stl_loader.cpp",
+#     "modelmaker.cpp",
+#     "mesh_maker.cpp",
+#     "types/sdf_core.cpp",
+#     "types/collada_core.cpp",
+#     "types/gltf_core.cpp",
+#     "types/obj_core.cpp",
+#     "types/stl_core.cpp",
+# ]
 
 env_modelmaker = env.Clone()
 
 
 
-env_modelmaker.add_source_files(env.modules_sources, sources)
+env_modelmaker.add_source_files(env.modules_sources, "*.cpp")
+env_modelmaker.add_source_files(env.modules_sources, "types/*.cpp")
+env_modelmaker.add_source_files(env.modules_sources, "loaders/*.cpp")
 env_modelmaker.Append(CPPPATH=["sdformat/include", "ign-math/include"])
 env_modelmaker.Append(LIBPATH=['libs'])
 env_modelmaker.Append(LIBS=['sdformat_static'])

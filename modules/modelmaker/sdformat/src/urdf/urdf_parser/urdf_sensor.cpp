@@ -33,16 +33,15 @@
 *********************************************************************/
 
 /* Author: John Hsu */
-#pragma warning(push, 0)
+
 
 #include <urdf_sensor/sensor.h>
 #include <fstream>
 #include <sstream>
-#include <stdexcept>
-#include <string>
+#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <tinyxml.h>
-// #include <console_bridge/console.h>
+//#include <console_bridge/console.h>
 
 namespace urdf{
 
@@ -61,19 +60,17 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.width = std::stoul(width_char);
+        camera.width = boost::lexical_cast<unsigned int>(width_char);
       }
-      catch (std::invalid_argument &e)
+      catch (boost::bad_lexical_cast &e)
       {
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
+        //logError("Camera image width [%s] is not a valid int: %s", width_char, e.what());
         return false;
       }
     }
     else
     {
+      //logError("Camera sensor needs an image width attribute");
       return false;
     }
 
@@ -82,19 +79,17 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.height = std::stoul(height_char);
+        camera.height = boost::lexical_cast<unsigned int>(height_char);
       }
-      catch (std::invalid_argument &e)
+      catch (boost::bad_lexical_cast &e)
       {
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
+        //logError("Camera image height [%s] is not a valid int: %s", height_char, e.what());
         return false;
       }
     }
     else
     {
+      //logError("Camera sensor needs an image height attribute");
       return false;
     }
 
@@ -103,6 +98,7 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
       camera.format = std::string(format_char);
     else
     {
+      //logError("Camera sensor needs an image format attribute");
       return false;
     }    
 
@@ -111,19 +107,17 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.hfov = std::stod(hfov_char);
+        camera.hfov = boost::lexical_cast<double>(hfov_char);
       }
-      catch (std::invalid_argument &e)
+      catch (boost::bad_lexical_cast &e)
       {
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
+        //logError("Camera image hfov [%s] is not a valid float: %s", hfov_char, e.what());
         return false;
       }
     }
     else
     {
+      //logError("Camera sensor needs an image hfov attribute");
       return false;
     }
 
@@ -132,19 +126,17 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.near = std::stod(near_char);
+        camera.near = boost::lexical_cast<double>(near_char);
       }
-      catch (std::invalid_argument &e)
+      catch (boost::bad_lexical_cast &e)
       {
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
+        //logError("Camera image near [%s] is not a valid float: %s", near_char, e.what());
         return false;
       }
     }
     else
     {
+      //logError("Camera sensor needs an image near attribute");
       return false;
     }
 
@@ -153,25 +145,24 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
     {
       try
       {
-        camera.far = std::stod(far_char);
+        camera.far = boost::lexical_cast<double>(far_char);
       }
-      catch (std::invalid_argument &e)
+      catch (boost::bad_lexical_cast &e)
       {
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
+        //logError("Camera image far [%s] is not a valid float: %s", far_char, e.what());
         return false;
       }
     }
     else
     {
+      //logError("Camera sensor needs an image far attribute");
       return false;
     }
     
   }
   else
   {
+    //logError("Camera sensor has no <image> element");
     return false;
   }
   return true;
@@ -190,14 +181,11 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.horizontal_samples = std::stoul(samples_char);
+        ray.horizontal_samples = boost::lexical_cast<unsigned int>(samples_char);
       }
-      catch (std::invalid_argument &e)
+      catch (boost::bad_lexical_cast &e)
       {
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
+        //logError("Ray horizontal samples [%s] is not a valid float: %s", samples_char, e.what());
         return false;
       }
     }
@@ -207,14 +195,11 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.horizontal_resolution = std::stod(resolution_char);
+        ray.horizontal_resolution = boost::lexical_cast<double>(resolution_char);
       }
-      catch (std::invalid_argument &e)
+      catch (boost::bad_lexical_cast &e)
       {
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
+        //logError("Ray horizontal resolution [%s] is not a valid float: %s", resolution_char, e.what());
         return false;
       }
     }   
@@ -224,14 +209,11 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.horizontal_min_angle = std::stod(min_angle_char);
+        ray.horizontal_min_angle = boost::lexical_cast<double>(min_angle_char);
       }
-      catch (std::invalid_argument &e)
+      catch (boost::bad_lexical_cast &e)
       {
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
+        //logError("Ray horizontal min_angle [%s] is not a valid float: %s", min_angle_char, e.what());
         return false;
       }
     }
@@ -241,14 +223,11 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.horizontal_max_angle = std::stod(max_angle_char);
+        ray.horizontal_max_angle = boost::lexical_cast<double>(max_angle_char);
       }
-      catch (std::invalid_argument &e)
+      catch (boost::bad_lexical_cast &e)
       {
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
+        //logError("Ray horizontal max_angle [%s] is not a valid float: %s", max_angle_char, e.what());
         return false;
       }
     }
@@ -262,14 +241,11 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.vertical_samples = std::stoul(samples_char);
+        ray.vertical_samples = boost::lexical_cast<unsigned int>(samples_char);
       }
-      catch (std::invalid_argument &e)
+      catch (boost::bad_lexical_cast &e)
       {
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
+        //logError("Ray vertical samples [%s] is not a valid float: %s", samples_char, e.what());
         return false;
       }
     }
@@ -279,14 +255,11 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.vertical_resolution = std::stod(resolution_char);
+        ray.vertical_resolution = boost::lexical_cast<double>(resolution_char);
       }
-      catch (std::invalid_argument &e)
+      catch (boost::bad_lexical_cast &e)
       {
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
+        //logError("Ray vertical resolution [%s] is not a valid float: %s", resolution_char, e.what());
         return false;
       }
     }   
@@ -296,14 +269,11 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.vertical_min_angle = std::stod(min_angle_char);
+        ray.vertical_min_angle = boost::lexical_cast<double>(min_angle_char);
       }
-      catch (std::invalid_argument &e)
+      catch (boost::bad_lexical_cast &e)
       {
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
+        //logError("Ray vertical min_angle [%s] is not a valid float: %s", min_angle_char, e.what());
         return false;
       }
     }
@@ -313,14 +283,11 @@ bool parseRay(Ray &ray, TiXmlElement* config)
     {
       try
       {
-        ray.vertical_max_angle = std::stod(max_angle_char);
+        ray.vertical_max_angle = boost::lexical_cast<double>(max_angle_char);
       }
-      catch (std::invalid_argument &e)
+      catch (boost::bad_lexical_cast &e)
       {
-        return false;
-      }
-      catch (std::out_of_range &e)
-      {
+        //logError("Ray vertical max_angle [%s] is not a valid float: %s", max_angle_char, e.what());
         return false;
       }
     }
@@ -328,9 +295,9 @@ bool parseRay(Ray &ray, TiXmlElement* config)
   return false;
 }
 
-VisualSensorSharedPtr parseVisualSensor(TiXmlElement *g)
+boost::shared_ptr<VisualSensor> parseVisualSensor(TiXmlElement *g)
 {
-  VisualSensorSharedPtr visual_sensor;
+  boost::shared_ptr<VisualSensor> visual_sensor;
 
   // get sensor type
   TiXmlElement *sensor_xml;
@@ -352,6 +319,7 @@ VisualSensorSharedPtr parseVisualSensor(TiXmlElement *g)
   }
   else
   {
+    //logError("No know sensor types [camera|ray] defined in <sensor> block");
   }
   return visual_sensor;
 }
@@ -364,6 +332,7 @@ bool parseSensor(Sensor &sensor, TiXmlElement* config)
   const char *name_char = config->Attribute("name");
   if (!name_char)
   {
+    //logError("No name given for the sensor.");
     return false;
   }
   sensor.name = std::string(name_char);
@@ -372,6 +341,7 @@ bool parseSensor(Sensor &sensor, TiXmlElement* config)
   const char *parent_link_name_char = config->Attribute("parent_link_name");
   if (!parent_link_name_char)
   {
+    //logError("No parent_link_name given for the sensor.");
     return false;
   }
   sensor.parent_link_name = std::string(parent_link_name_char);
@@ -392,4 +362,4 @@ bool parseSensor(Sensor &sensor, TiXmlElement* config)
 
 }
 
-#pragma warning(pop)
+
