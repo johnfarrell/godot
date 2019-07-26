@@ -5,6 +5,8 @@
 #include "core/resource.h"
 #include "core/variant.h"
 
+#include <urdf_parser/urdf_parser.h>
+
 #include <string>
 
 class SDFCore : public Resource {

@@ -18,13 +18,12 @@ Import('env')
 env_modelmaker = env.Clone()
 
 
-
+env_modelmaker.Append(CPPPATH=["urdfparser/include"])
+env_modelmaker.Append(LIBPATH=['libs'])
+env_modelmaker.Append(LIBS=['urdf_parser_static'])
 env_modelmaker.add_source_files(env.modules_sources, "*.cpp")
 env_modelmaker.add_source_files(env.modules_sources, "types/*.cpp")
 env_modelmaker.add_source_files(env.modules_sources, "loaders/*.cpp")
-env_modelmaker.Append(CPPPATH=["sdformat/include", "ign-math/include"])
-env_modelmaker.Append(LIBPATH=['libs'])
-env_modelmaker.Append(LIBS=['sdformat_static'])
 # env_modelmaker.Append(CCFLAGS=['-fPIC'])
 # env_modelmaker['LIBS'] = []
 
