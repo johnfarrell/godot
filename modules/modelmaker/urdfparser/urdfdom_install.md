@@ -3,12 +3,12 @@
 Link: https://github.com/ros/console_bridge.git
 
 ```
+$ cd console_bridge
 $ git fetch --all --tags --prune
 $ git checkout tags/0.2.7 -b 0.2.7
 ```
 
-You need to remove the ```-std=c++11``` compile tag in ```CMakeLists.txt``` to ensure compatability with Godot and other libraries.
-
+Build the library
 ```
 $ mkdir build
 $ cd build
@@ -21,11 +21,14 @@ $ sudo make install
 
 Link: https://github.com/ros/urdfdom_headers.git
 
+Get the code
 ```
+$ cd urdfdom_headers
 $ git fetch --all
 $ git checkout tags/0.3.0 -b 0.3.0
 ```
 
+Build the library
 ```
 $ mkdir build
 $ cd build
@@ -39,6 +42,7 @@ $ sudo make install
 Link: https://github.com/ros/urdfdom
 
 ```
+$ cd urdfdom
 $ git fetch --all --tags --prune
 $ git checkout tags/0.3.0 -b 0.3.0
 ```
@@ -47,9 +51,6 @@ $ git checkout tags/0.3.0 -b 0.3.0
 $ mkdir build
 $ cd build
 ```
-
-Make sure you bring in the changes from modelmaker/urdfparser/makefiles before you make.
-The one in /makefiles goes in /urdfdom and the one in /makefiles/urdf_parser will go in /urdfdom/urdf_parser. These will compile static libraries
 
 ```
 $ cmake ..
