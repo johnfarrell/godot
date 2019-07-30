@@ -34,6 +34,7 @@
 
 /* Author: Wim Meeussen */
 
+#include <boost/algorithm/string.hpp>
 #include <vector>
 #include "urdf_parser/urdf_parser.h"
 #include <console_bridge/console.h>
@@ -45,13 +46,13 @@ bool parseMaterial(Material &material, TiXmlElement *config, bool only_name_is_o
 bool parseLink(Link &link, TiXmlElement *config);
 bool parseJoint(Joint &joint, TiXmlElement *config);
 
-ModelInterfaceSharedPtr  parseURDFFile(const std::string &path)
+boost::shared_ptr<ModelInterface>  parseURDFFile(const std::string &path)
 {
     std::ifstream stream( path.c_str() );
     if (!stream)
     {
-      CONSOLE_BRIDGE_logError(("File " + path + " does not exist").c_str());
-      return ModelInterfaceSharedPtr();
+      logError(("File " + path + " does not exist").c_str());
+      return boost::shared_ptr<ModelInterface>();
     }
 
     std::string xml_str((std::istreambuf_iterator<char>(stream)),
@@ -59,16 +60,16 @@ ModelInterfaceSharedPtr  parseURDFFile(const std::string &path)
     return urdf::parseURDF( xml_str );
 }
 
-ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
+boost::shared_ptr<ModelInterface>  parseURDF(const std::string &xml_string)
 {
-  ModelInterfaceSharedPtr model(new ModelInterface);
+  boost::shared_ptr<ModelInterface> model(new ModelInterface);
   model->clear();
 
   TiXmlDocument xml_doc;
   xml_doc.Parse(xml_string.c_str());
   if (xml_doc.Error())
   {
-    CONSOLE_BRIDGE_logError(xml_doc.ErrorDesc());
+    logError(xml_doc.ErrorDesc());
     xml_doc.ClearError();
     model.reset();
     return model;
@@ -77,7 +78,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   TiXmlElement *robot_xml = xml_doc.FirstChildElement("robot");
   if (!robot_xml)
   {
-    CONSOLE_BRIDGE_logError("Could not find the 'robot' element in the xml file");
+    logError("Could not find the 'robot' element in the xml file");
     model.reset();
     return model;
   }
@@ -86,7 +87,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   const char *name = robot_xml->Attribute("name");
   if (!name)
   {
-    CONSOLE_BRIDGE_logError("No name given for the robot.");
+    logError("No name given for the robot.");
     model.reset();
     return model;
   }
@@ -95,14 +96,14 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   // Get all Material elements
   for (TiXmlElement* material_xml = robot_xml->FirstChildElement("material"); material_xml; material_xml = material_xml->NextSiblingElement("material"))
   {
-    MaterialSharedPtr material;
+    boost::shared_ptr<Material> material;
     material.reset(new Material);
 
     try {
       parseMaterial(*material, material_xml, false); // material needs to be fully defined here
       if (model->getMaterial(material->name))
       {
-        CONSOLE_BRIDGE_logError("material '%s' is not unique.", material->name.c_str());
+        logError("material '%s' is not unique.", material->name.c_str());
         material.reset();
         model.reset();
         return model;
@@ -110,11 +111,11 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
       else
       {
         model->materials_.insert(make_pair(material->name,material));
-        CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new material '%s'", material->name.c_str());
+        logDebug("urdfdom: successfully added a new material '%s'", material->name.c_str());
       }
     }
-    catch (ParseError &/*e*/) {
-      CONSOLE_BRIDGE_logError("material xml is not initialized correctly");
+    catch (ParseError &e) {
+      logError("material xml is not initialized correctly");
       material.reset();
       model.reset();
       return model;
@@ -124,40 +125,40 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   // Get all Link elements
   for (TiXmlElement* link_xml = robot_xml->FirstChildElement("link"); link_xml; link_xml = link_xml->NextSiblingElement("link"))
   {
-    LinkSharedPtr link;
+    boost::shared_ptr<Link> link;
     link.reset(new Link);
 
     try {
       parseLink(*link, link_xml);
       if (model->getLink(link->name))
       {
-        CONSOLE_BRIDGE_logError("link '%s' is not unique.", link->name.c_str());
+        logError("link '%s' is not unique.", link->name.c_str());
         model.reset();
         return model;
       }
       else
       {
         // set link visual material
-        CONSOLE_BRIDGE_logDebug("urdfdom: setting link '%s' material", link->name.c_str());
+        logDebug("urdfdom: setting link '%s' material", link->name.c_str());
         if (link->visual)
         {
           if (!link->visual->material_name.empty())
           {
             if (model->getMaterial(link->visual->material_name))
             {
-              CONSOLE_BRIDGE_logDebug("urdfdom: setting link '%s' material to '%s'", link->name.c_str(),link->visual->material_name.c_str());
+              logDebug("urdfdom: setting link '%s' material to '%s'", link->name.c_str(),link->visual->material_name.c_str());
               link->visual->material = model->getMaterial( link->visual->material_name.c_str() );
             }
             else
             {
               if (link->visual->material)
               {
-                CONSOLE_BRIDGE_logDebug("urdfdom: link '%s' material '%s' defined in Visual.", link->name.c_str(),link->visual->material_name.c_str());
+                logDebug("urdfdom: link '%s' material '%s' defined in Visual.", link->name.c_str(),link->visual->material_name.c_str());
                 model->materials_.insert(make_pair(link->visual->material->name,link->visual->material));
               }
               else
               {
-                CONSOLE_BRIDGE_logError("link '%s' material '%s' undefined.", link->name.c_str(),link->visual->material_name.c_str());
+                logError("link '%s' material '%s' undefined.", link->name.c_str(),link->visual->material_name.c_str());
                 model.reset();
                 return model;
               }
@@ -166,17 +167,17 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
         }
 
         model->links_.insert(make_pair(link->name,link));
-        CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new link '%s'", link->name.c_str());
+        logDebug("urdfdom: successfully added a new link '%s'", link->name.c_str());
       }
     }
-    catch (ParseError &/*e*/) {
-      CONSOLE_BRIDGE_logError("link xml is not initialized correctly");
+    catch (ParseError &e) {
+      logError("link xml is not initialized correctly");
       model.reset();
       return model;
     }
   }
   if (model->links_.empty()){
-    CONSOLE_BRIDGE_logError("No link elements found in urdf file");
+    logError("No link elements found in urdf file");
     model.reset();
     return model;
   }
@@ -184,26 +185,26 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   // Get all Joint elements
   for (TiXmlElement* joint_xml = robot_xml->FirstChildElement("joint"); joint_xml; joint_xml = joint_xml->NextSiblingElement("joint"))
   {
-    JointSharedPtr joint;
+    boost::shared_ptr<Joint> joint;
     joint.reset(new Joint);
 
     if (parseJoint(*joint, joint_xml))
     {
       if (model->getJoint(joint->name))
       {
-        CONSOLE_BRIDGE_logError("joint '%s' is not unique.", joint->name.c_str());
+        logError("joint '%s' is not unique.", joint->name.c_str());
         model.reset();
         return model;
       }
       else
       {
         model->joints_.insert(make_pair(joint->name,joint));
-        CONSOLE_BRIDGE_logDebug("urdfdom: successfully added a new joint '%s'", joint->name.c_str());
+        logDebug("urdfdom: successfully added a new joint '%s'", joint->name.c_str());
       }
     }
     else
     {
-      CONSOLE_BRIDGE_logError("joint xml is not initialized correctly");
+      logError("joint xml is not initialized correctly");
       model.reset();
       return model;
     }
@@ -222,7 +223,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   }
   catch(ParseError &e)
   {
-    CONSOLE_BRIDGE_logError("Failed to build tree: %s", e.what());
+    logError("Failed to build tree: %s", e.what());
     model.reset();
     return model;
   }
@@ -234,7 +235,7 @@ ModelInterfaceSharedPtr  parseURDF(const std::string &xml_string)
   }
   catch(ParseError &e)
   {
-    CONSOLE_BRIDGE_logError("Failed to find root link: %s", e.what());
+    logError("Failed to find root link: %s", e.what());
     model.reset();
     return model;
   }
@@ -254,28 +255,28 @@ TiXmlDocument*  exportURDF(const ModelInterface &model)
   doc->LinkEndChild(robot);
 
 
-  for (std::map<std::string, MaterialSharedPtr>::const_iterator m=model.materials_.begin(); m!=model.materials_.end(); m++)
+  for (std::map<std::string, boost::shared_ptr<Material> >::const_iterator m=model.materials_.begin(); m!=model.materials_.end(); m++)
   {
-    CONSOLE_BRIDGE_logDebug("urdfdom: exporting material [%s]\n",m->second->name.c_str());
+    logDebug("urdfdom: exporting material [%s]\n",m->second->name.c_str());
     exportMaterial(*(m->second), robot);
   }
 
-  for (std::map<std::string, LinkSharedPtr>::const_iterator l=model.links_.begin(); l!=model.links_.end(); l++)  
+  for (std::map<std::string, boost::shared_ptr<Link> >::const_iterator l=model.links_.begin(); l!=model.links_.end(); l++)  
   {
-    CONSOLE_BRIDGE_logDebug("urdfdom: exporting link [%s]\n",l->second->name.c_str());
+    logDebug("urdfdom: exporting link [%s]\n",l->second->name.c_str());
     exportLink(*(l->second), robot);
   }
   	
-  for (std::map<std::string, JointSharedPtr>::const_iterator j=model.joints_.begin(); j!=model.joints_.end(); j++)  
+  for (std::map<std::string, boost::shared_ptr<Joint> >::const_iterator j=model.joints_.begin(); j!=model.joints_.end(); j++)  
   {
-    CONSOLE_BRIDGE_logDebug("urdfdom: exporting joint [%s]\n",j->second->name.c_str());
+    logDebug("urdfdom: exporting joint [%s]\n",j->second->name.c_str());
     exportJoint(*(j->second), robot);
   }
 
   return doc;
 }
     
-TiXmlDocument*  exportURDF(ModelInterfaceSharedPtr &model)
+TiXmlDocument*  exportURDF(boost::shared_ptr<ModelInterface> &model)
 {
   return exportURDF(*model);
 }

@@ -38,6 +38,7 @@
 #include <urdf_model/pose.h>
 #include <fstream>
 #include <sstream>
+#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <console_bridge/console.h>
 #include <tinyxml.h>
@@ -99,7 +100,7 @@ bool parsePose(Pose &pose, TiXmlElement* xml)
         pose.position.init(xyz_str);
       }
       catch (ParseError &e) {
-        CONSOLE_BRIDGE_logError(e.what());
+        logError(e.what());
         return false;
       }
     }
@@ -111,7 +112,7 @@ bool parsePose(Pose &pose, TiXmlElement* xml)
         pose.rotation.init(rpy_str);
       }
       catch (ParseError &e) {
-        CONSOLE_BRIDGE_logError(e.what());
+        logError(e.what());
         return false;
       }
     }

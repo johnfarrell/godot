@@ -40,10 +40,11 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
 
 #include "joint.h"
 #include "color.h"
-#include "types.h"
 
 namespace urdf{
 
@@ -149,10 +150,10 @@ class Visual
 public:
   Visual() { this->clear(); };
   Pose origin;
-  GeometrySharedPtr geometry;
+  boost::shared_ptr<Geometry> geometry;
 
   std::string material_name;
-  MaterialSharedPtr material;
+  boost::shared_ptr<Material> material;
 
   void clear()
   {
@@ -171,7 +172,7 @@ class Collision
 public:
   Collision() { this->clear(); };
   Pose origin;
-  GeometrySharedPtr geometry;
+  boost::shared_ptr<Geometry> geometry;
 
   void clear()
   {
@@ -193,32 +194,32 @@ public:
   std::string name;
 
   /// inertial element
-  InertialSharedPtr inertial;
+  boost::shared_ptr<Inertial> inertial;
 
   /// visual element
-  VisualSharedPtr visual;
+  boost::shared_ptr<Visual> visual;
 
   /// collision element
-  CollisionSharedPtr collision;
+  boost::shared_ptr<Collision> collision;
 
   /// if more than one collision element is specified, all collision elements are placed in this array (the collision member points to the first element of the array)
-  std::vector<CollisionSharedPtr> collision_array;
+  std::vector<boost::shared_ptr<Collision> > collision_array;
 
   /// if more than one visual element is specified, all visual elements are placed in this array (the visual member points to the first element of the array)
-  std::vector<VisualSharedPtr> visual_array;
+  std::vector<boost::shared_ptr<Visual> > visual_array;
 
   /// Parent Joint element
   ///   explicitly stating "parent" because we want directional-ness for tree structure
   ///   every link can have one parent
-  JointSharedPtr parent_joint;
+  boost::shared_ptr<Joint> parent_joint;
 
-  std::vector<JointSharedPtr> child_joints;
-  std::vector<LinkSharedPtr> child_links;
+  std::vector<boost::shared_ptr<Joint> > child_joints;
+  std::vector<boost::shared_ptr<Link> > child_links;
 
-  LinkSharedPtr getParent() const
+  boost::shared_ptr<Link> getParent() const
   {return parent_link_.lock();};
 
-  void setParent(const LinkSharedPtr &parent)
+  void setParent(const boost::shared_ptr<Link> &parent)
   { parent_link_ = parent; }
   
   void clear()
@@ -235,7 +236,7 @@ public:
   };
 
 private:
-  LinkWeakPtr parent_link_;
+  boost::weak_ptr<Link> parent_link_;
 
 };
 

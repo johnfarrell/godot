@@ -64,13 +64,13 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
       }
       catch (boost::bad_lexical_cast &e)
       {
-        CONSOLE_BRIDGE_logError("Camera image width [%s] is not a valid int: %s", width_char, e.what());
+        logError("Camera image width [%s] is not a valid int: %s", width_char, e.what());
         return false;
       }
     }
     else
     {
-      CONSOLE_BRIDGE_logError("Camera sensor needs an image width attribute");
+      logError("Camera sensor needs an image width attribute");
       return false;
     }
 
@@ -83,13 +83,13 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
       }
       catch (boost::bad_lexical_cast &e)
       {
-        CONSOLE_BRIDGE_logError("Camera image height [%s] is not a valid int: %s", height_char, e.what());
+        logError("Camera image height [%s] is not a valid int: %s", height_char, e.what());
         return false;
       }
     }
     else
     {
-      CONSOLE_BRIDGE_logError("Camera sensor needs an image height attribute");
+      logError("Camera sensor needs an image height attribute");
       return false;
     }
 
@@ -98,7 +98,7 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
       camera.format = std::string(format_char);
     else
     {
-      CONSOLE_BRIDGE_logError("Camera sensor needs an image format attribute");
+      logError("Camera sensor needs an image format attribute");
       return false;
     }    
 
@@ -111,13 +111,13 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
       }
       catch (boost::bad_lexical_cast &e)
       {
-        CONSOLE_BRIDGE_logError("Camera image hfov [%s] is not a valid float: %s", hfov_char, e.what());
+        logError("Camera image hfov [%s] is not a valid float: %s", hfov_char, e.what());
         return false;
       }
     }
     else
     {
-      CONSOLE_BRIDGE_logError("Camera sensor needs an image hfov attribute");
+      logError("Camera sensor needs an image hfov attribute");
       return false;
     }
 
@@ -130,13 +130,13 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
       }
       catch (boost::bad_lexical_cast &e)
       {
-        CONSOLE_BRIDGE_logError("Camera image near [%s] is not a valid float: %s", near_char, e.what());
+        logError("Camera image near [%s] is not a valid float: %s", near_char, e.what());
         return false;
       }
     }
     else
     {
-      CONSOLE_BRIDGE_logError("Camera sensor needs an image near attribute");
+      logError("Camera sensor needs an image near attribute");
       return false;
     }
 
@@ -149,20 +149,20 @@ bool parseCamera(Camera &camera, TiXmlElement* config)
       }
       catch (boost::bad_lexical_cast &e)
       {
-        CONSOLE_BRIDGE_logError("Camera image far [%s] is not a valid float: %s", far_char, e.what());
+        logError("Camera image far [%s] is not a valid float: %s", far_char, e.what());
         return false;
       }
     }
     else
     {
-      CONSOLE_BRIDGE_logError("Camera sensor needs an image far attribute");
+      logError("Camera sensor needs an image far attribute");
       return false;
     }
     
   }
   else
   {
-    CONSOLE_BRIDGE_logError("Camera sensor has no <image> element");
+    logError("Camera sensor has no <image> element");
     return false;
   }
   return true;
@@ -185,7 +185,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       }
       catch (boost::bad_lexical_cast &e)
       {
-        CONSOLE_BRIDGE_logError("Ray horizontal samples [%s] is not a valid float: %s", samples_char, e.what());
+        logError("Ray horizontal samples [%s] is not a valid float: %s", samples_char, e.what());
         return false;
       }
     }
@@ -199,7 +199,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       }
       catch (boost::bad_lexical_cast &e)
       {
-        CONSOLE_BRIDGE_logError("Ray horizontal resolution [%s] is not a valid float: %s", resolution_char, e.what());
+        logError("Ray horizontal resolution [%s] is not a valid float: %s", resolution_char, e.what());
         return false;
       }
     }   
@@ -213,7 +213,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       }
       catch (boost::bad_lexical_cast &e)
       {
-        CONSOLE_BRIDGE_logError("Ray horizontal min_angle [%s] is not a valid float: %s", min_angle_char, e.what());
+        logError("Ray horizontal min_angle [%s] is not a valid float: %s", min_angle_char, e.what());
         return false;
       }
     }
@@ -227,7 +227,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       }
       catch (boost::bad_lexical_cast &e)
       {
-        CONSOLE_BRIDGE_logError("Ray horizontal max_angle [%s] is not a valid float: %s", max_angle_char, e.what());
+        logError("Ray horizontal max_angle [%s] is not a valid float: %s", max_angle_char, e.what());
         return false;
       }
     }
@@ -245,7 +245,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       }
       catch (boost::bad_lexical_cast &e)
       {
-        CONSOLE_BRIDGE_logError("Ray vertical samples [%s] is not a valid float: %s", samples_char, e.what());
+        logError("Ray vertical samples [%s] is not a valid float: %s", samples_char, e.what());
         return false;
       }
     }
@@ -259,7 +259,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       }
       catch (boost::bad_lexical_cast &e)
       {
-        CONSOLE_BRIDGE_logError("Ray vertical resolution [%s] is not a valid float: %s", resolution_char, e.what());
+        logError("Ray vertical resolution [%s] is not a valid float: %s", resolution_char, e.what());
         return false;
       }
     }   
@@ -273,7 +273,7 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       }
       catch (boost::bad_lexical_cast &e)
       {
-        CONSOLE_BRIDGE_logError("Ray vertical min_angle [%s] is not a valid float: %s", min_angle_char, e.what());
+        logError("Ray vertical min_angle [%s] is not a valid float: %s", min_angle_char, e.what());
         return false;
       }
     }
@@ -287,17 +287,16 @@ bool parseRay(Ray &ray, TiXmlElement* config)
       }
       catch (boost::bad_lexical_cast &e)
       {
-        CONSOLE_BRIDGE_logError("Ray vertical max_angle [%s] is not a valid float: %s", max_angle_char, e.what());
+        logError("Ray vertical max_angle [%s] is not a valid float: %s", max_angle_char, e.what());
         return false;
       }
     }
   }
-  return false;
 }
 
-VisualSensorSharedPtr parseVisualSensor(TiXmlElement *g)
+boost::shared_ptr<VisualSensor> parseVisualSensor(TiXmlElement *g)
 {
-  VisualSensorSharedPtr visual_sensor;
+  boost::shared_ptr<VisualSensor> visual_sensor;
 
   // get sensor type
   TiXmlElement *sensor_xml;
@@ -319,7 +318,7 @@ VisualSensorSharedPtr parseVisualSensor(TiXmlElement *g)
   }
   else
   {
-    CONSOLE_BRIDGE_logError("No know sensor types [camera|ray] defined in <sensor> block");
+    logError("No know sensor types [camera|ray] defined in <sensor> block");
   }
   return visual_sensor;
 }
@@ -332,7 +331,7 @@ bool parseSensor(Sensor &sensor, TiXmlElement* config)
   const char *name_char = config->Attribute("name");
   if (!name_char)
   {
-    CONSOLE_BRIDGE_logError("No name given for the sensor.");
+    logError("No name given for the sensor.");
     return false;
   }
   sensor.name = std::string(name_char);
@@ -341,7 +340,7 @@ bool parseSensor(Sensor &sensor, TiXmlElement* config)
   const char *parent_link_name_char = config->Attribute("parent_link_name");
   if (!parent_link_name_char)
   {
-    CONSOLE_BRIDGE_logError("No parent_link_name given for the sensor.");
+    logError("No parent_link_name given for the sensor.");
     return false;
   }
   sensor.parent_link_name = std::string(parent_link_name_char);

@@ -38,6 +38,7 @@
 #include <urdf_model/twist.h>
 #include <fstream>
 #include <sstream>
+#include <boost/lexical_cast.hpp>
 #include <algorithm>
 #include <tinyxml.h>
 #include <console_bridge/console.h>
@@ -57,7 +58,7 @@ bool parseTwist(Twist &twist, TiXmlElement* xml)
       }
       catch (ParseError &e) {
         twist.linear.clear();
-        CONSOLE_BRIDGE_logError("Malformed linear string [%s]: %s", linear_char, e.what());
+        logError("Malformed linear string [%s]: %s", linear_char, e.what());
         return false;
       }
     }
@@ -70,7 +71,7 @@ bool parseTwist(Twist &twist, TiXmlElement* xml)
       }
       catch (ParseError &e) {
         twist.angular.clear();
-        CONSOLE_BRIDGE_logError("Malformed angular [%s]: %s", angular_char, e.what());
+        logError("Malformed angular [%s]: %s", angular_char, e.what());
         return false;
       }
     }

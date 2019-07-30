@@ -4,7 +4,7 @@ Link: https://github.com/ros/console_bridge.git
 
 ```
 $ git fetch --all --tags --prune
-$ git checkout tags/0.3.0 -b 0.3.0
+$ git checkout tags/0.2.7 -b 0.2.7
 ```
 
 You need to remove the ```-std=c++11``` compile tag in ```CMakeLists.txt``` to ensure compatability with Godot and other libraries.
@@ -23,7 +23,7 @@ Link: https://github.com/ros/urdfdom_headers.git
 
 ```
 $ git fetch --all
-$ git checkout 0.4
+$ git checkout tags/0.3.0 -b 0.3.0
 ```
 
 ```
@@ -40,7 +40,7 @@ Link: https://github.com/ros/urdfdom
 
 ```
 $ git fetch --all --tags --prune
-$ git checkout tags/0.4.2 -b 0.4.2
+$ git checkout tags/0.3.0 -b 0.3.0
 ```
 
 ```

@@ -1,11 +1,11 @@
 #include "sdf_core.h"
 
 // This is a hacky suggested fix to solve the issue down below. Doesn't seem to work
-#define _GLIBCXX_USE_CXX11_ABI 0
-
+// #define GLIBCXX_USE_CXX11_ABI 0
+// #include <urdf_parser/urdf_parser.h>
 #include <urdf_parser/urdf_parser.h>
-#include <stdlib.h>
-// #include <string>
+// #include <stdlib.h>
+#include <string>
 
 SDFCore::SDFCore() {
 	_models = memnew(Array);
@@ -52,11 +52,13 @@ bool SDFCore::load(std::string p_file) {
 	// https://github.com/godotengine/godot/commit/5dae2ea777da5395cf1b1e9a8bc6abc93f6ae6bb
 	// I have merged those changes into my build to try to get it to work but it doesnt seem to want to work.
 	//
+	// #define GLIBCXX_USE_CXX11_ABI 0
+	//
 	// I tried the fix suggested at https://gcc.gnu.org/onlinedocs/gcc-5.2.0/libstdc++/manual/manual/using_dual_abi.html
 	// but it seems thats mainly for code that uses C++11 linking to older code, not older code linking to C++11.
 	//
 	// I've tried rebuilding both SDFormat and Godot various times with different std versions, but haven't figured it out yet.
-	urdf::parseURDF(p_file);
+	urdf::parseURDFFile(p_file);
 	return false;
 }
 
