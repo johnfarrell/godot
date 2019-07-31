@@ -62,7 +62,7 @@ Clone the modelmaker branch and build it.
 
 I would make sure the SDFormat library isn't being used before running these to make sure everything builds smoothly, you should be able to just comment out ```types/sdf_core.cpp:60```
 ```
-$ scons p=x`` tools=yes module_mono_enabled=yes mono_glue=no
+$ scons p=x11 tools=yes module_mono_enabled=yes mono_glue=no
 $ bin/godot.x11.tools.64.mono --generate-mono-glue modules/mono/glue
 ```
 
