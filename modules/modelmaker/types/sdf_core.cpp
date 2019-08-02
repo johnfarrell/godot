@@ -3,7 +3,6 @@
 // This is a hacky suggested fix to solve the issue down below. Doesn't seem to work
 // #define GLIBCXX_USE_CXX11_ABI 0
 // #include <urdf_parser/urdf_parser.h>
-#include <urdf_parser/urdf_parser.h>
 // #include <stdlib.h>
 #include <string>
 
@@ -58,7 +57,6 @@ bool SDFCore::load(std::string p_file) {
 	// but it seems thats mainly for code that uses C++11 linking to older code, not older code linking to C++11.
 	//
 	// I've tried rebuilding both SDFormat and Godot various times with different std versions, but haven't figured it out yet.
-	urdf::parseURDFFile(p_file);
 	return false;
 }
 
