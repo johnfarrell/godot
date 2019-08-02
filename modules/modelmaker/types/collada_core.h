@@ -9,6 +9,6 @@ public:
     ColladaCore();
     ~ColladaCore();
 
-    bool parse(String file_path);
+    String parse(String file_path);
 };
 #endif // COLLADA_CORE_H

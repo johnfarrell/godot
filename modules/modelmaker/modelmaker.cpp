@@ -1,6 +1,7 @@
 /* modelmaker/modelmaker.cpp */
 
 #include "modelmaker.h"
+#include "utils.h"
 
 
 ModelMaker::ModelMaker() {
@@ -21,7 +22,10 @@ void ModelMaker::set_parent(const NodePath par_node) {
 	_parent_node = par_node;
 }
 
-void ModelMaker::create_model(const String file_path) {
+String ModelMaker::create_model(const String file_name) {
+	String mesh_status = _mesh_handler->create_mesh(file_name);
+
+	return mesh_status;
 }
 
 void ModelMaker::get_mesh() {

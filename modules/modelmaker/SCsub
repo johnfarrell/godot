@@ -18,9 +18,9 @@ Import('env')
 env_modelmaker = env.Clone()
 
 
-env_modelmaker.Append(CPPPATH=["urdfparser/include"])
-env_modelmaker.Append(LIBPATH=['libs'])
-env_modelmaker.Append(LIBS=['urdfdom_model_state_static', 'urdfdom_model_static', 'urdfdom_sensor_static', 'urdfdom_world_static'])
+# env_modelmaker.Append(CPPPATH=["urdfparser/include"])
+# env_modelmaker.Append(LIBPATH=['libs'])
+# env_modelmaker.Append(LIBS=['urdfdom_model_state_static', 'urdfdom_model_static', 'urdfdom_sensor_static', 'urdfdom_world_static'])
 env_modelmaker.add_source_files(env.modules_sources, "*.cpp")
 env_modelmaker.add_source_files(env.modules_sources, "types/*.cpp")
 env_modelmaker.add_source_files(env.modules_sources, "loaders/*.cpp")

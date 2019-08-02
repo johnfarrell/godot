@@ -15,8 +15,8 @@ MeshMaker::~MeshMaker() {
 	memdelete(_gltf_handler);
 }
 
-bool MeshMaker::create_mesh(String file_path) {
-	return false;
+String MeshMaker::create_mesh(String file_path) {
+	return _collada_handler->parse(file_path);
 }
 
 void MeshMaker::_bind_methods() {

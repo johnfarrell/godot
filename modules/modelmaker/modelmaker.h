@@ -11,6 +11,8 @@
 #include "scene/3d/spatial.h"
 #include "scene/3d/mesh_instance.h"
 
+#include <string>
+
 class ModelMaker : public Reference {
 	GDCLASS(ModelMaker, Reference);
 
@@ -29,7 +31,7 @@ public:
 	ModelMaker(const NodePath par_node);
 
 	void set_parent(const NodePath par_node);
-	void create_model(const String file_path);
+	String create_model(const String file_path);
 	void get_mesh();
 };
 

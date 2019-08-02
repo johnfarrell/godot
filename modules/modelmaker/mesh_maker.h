@@ -10,6 +10,7 @@
 #include "core/reference.h"
 #include "scene/3d/mesh_instance.h"
 
+
 class MeshMaker : public Reference {
 	GDCLASS(MeshMaker, Reference);
 
@@ -28,7 +29,7 @@ public:
     MeshMaker();
     ~MeshMaker();
 
-    bool create_mesh(String file_path);
+    String create_mesh(String file_path);
 };
 
 #endif // MESH_MAKER_H
