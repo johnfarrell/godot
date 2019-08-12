@@ -29,7 +29,7 @@ public:
     MeshMaker();
     ~MeshMaker();
 
-    String create_mesh(String file_path);
+    Node* create_mesh(String file_path);
 };
 
 #endif // MESH_MAKER_H

@@ -23,9 +23,9 @@ void ModelMaker::set_parent(const NodePath par_node) {
 }
 
 String ModelMaker::create_model(const String file_name) {
-	String mesh_status = _mesh_handler->create_mesh(file_name);
+	Node* mesh_status = _mesh_handler->create_mesh(file_name);
 
-	return mesh_status;
+	return "ok";
 }
 
 void ModelMaker::get_mesh() {
