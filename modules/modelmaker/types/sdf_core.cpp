@@ -1,11 +1,10 @@
 #include "sdf_core.h"
 
 // This is a hacky suggested fix to solve the issue down below. Doesn't seem to work
-#define _GLIBCXX_USE_CXX11_ABI 0
+// #define _GLIBCXX_USE_CXX11_ABI 0
 #include <stdlib.h>
 // #include <string>
-#include <sdf/SDFImpl.hh>
-using namespace sdf;
+#include <sdf/sdf.hh>
 
 SDFCore::SDFCore() {
 	_models = memnew(Array);
@@ -57,7 +56,7 @@ bool SDFCore::load(std::string p_file) {
 	//
 	// I've tried rebuilding both SDFormat and Godot various times with different std versions, but haven't figured it out yet.
 
-	SDFPtr sdfElement(new SDF());
+	sdf::SDFPtr sdfElement(new sdf::SDF());
 	return false;
 }
 

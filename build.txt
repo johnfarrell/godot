@@ -1,0 +1,28 @@
+scons: Reading SConscript files ...
+Enabling ALSA
+Enabling PulseAudio
+Mono root directory not found. Using pkg-config instead
+Found Mono JIT compiler version: 5.12.0.301
+Checking for `thread_local` support... supported
+Checking for C header file mntent.h... (cached) yes
+scons: done reading SConscript files.
+scons: Building targets ...
+Compiling ==> modules/modelmaker/types/sdf_core.cpp
+Compiling ==> modules/modelmaker/loaders/sdf_loader.cpp
+Compiling ==> modules/mono/glue/mono_glue.gen.cpp
+Compiling ==> modules/mono/mono_gd/gd_mono.cpp
+Compiling ==> modules/mono/editor/bindings_generator.cpp
+Compiling ==> modules/mono/editor/godotsharp_builds.cpp
+Linking Static Library ==> modules/libmodules.x11.tools.64.a
+Ranlib Library         ==> modules/libmodules.x11.tools.64.a
+Compiling ==> editor/editor_about.cpp
+Compiling ==> editor/project_manager.cpp
+Compiling ==> editor/collada/collada.cpp
+Compiling ==> editor/import/editor_import_collada.cpp
+Linking Static Library ==> editor/libeditor.x11.tools.64.a
+Ranlib Library         ==> editor/libeditor.x11.tools.64.a
+Compiling ==> core/engine.cpp
+Linking Static Library ==> core/libcore.x11.tools.64.a
+Ranlib Library         ==> core/libcore.x11.tools.64.a
+Linking Program        ==> bin/godot.x11.tools.64.mono
+scons: building terminated because of errors.
