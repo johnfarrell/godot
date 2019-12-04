@@ -12,7 +12,7 @@
 
 
 class MeshMaker : public Reference {
-	GDCLASS(MeshMaker, Reference);
+	GDCLASS(MeshMaker, Reference)
 
 protected:
 	static void _bind_methods();

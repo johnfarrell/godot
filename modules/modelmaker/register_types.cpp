@@ -8,6 +8,7 @@
 #include "loaders/stl_loader.h"
 #include "mesh_maker.h"
 #include "modelmaker.h"
+#include "joint_maker.h"
 
 // Register STL and its loader
 static ResourceFormatLoaderSDF *sdf_loader = NULL;
@@ -17,6 +18,7 @@ static ResourceFormatLoaderSTL *stl_loader = NULL;
 void register_modelmaker_types() {
 	ClassDB::register_class<ModelMaker>();
 	ClassDB::register_class<MeshMaker>();
+	ClassDB::register_class<JointMaker>();
 
 #ifdef TOOLS_ENABLED
 	sdf_loader = memnew(ResourceFormatLoaderSDF);
