@@ -1,0 +1,36 @@
+#modelmaker / SCsub
+
+Import('env')
+
+# sources = [
+#     "register_types.cpp",
+#     "loaders/sdf_loader.cpp",
+#     "loaders/stl_loader.cpp",
+#     "modelmaker.cpp",
+#     "mesh_maker.cpp",
+#     "types/sdf_core.cpp",
+#     "types/collada_core.cpp",
+#     "types/gltf_core.cpp",
+#     "types/obj_core.cpp",
+#     "types/stl_core.cpp",
+# ]
+
+env_modelmaker = env.Clone()
+
+
+# env_modelmaker.Append(CPPPATH=["urdfparser/include"])
+# env_modelmaker.Append(LIBPATH=['libs'])
+# env_modelmaker.Append(LIBS=['urdfdom_model_state_static', 'urdfdom_model_static', 'urdfdom_sensor_static', 'urdfdom_world_static'])
+env_modelmaker.add_source_files(env.modules_sources, "*.cpp")
+env_modelmaker.add_source_files(env.modules_sources, "types/*.cpp")
+env_modelmaker.add_source_files(env.modules_sources, "loaders/*.cpp")
+# env_modelmaker.Append(CCFLAGS=['-fPIC'])
+# env_modelmaker['LIBS'] = []
+
+# # Define shared library
+# shared_lib = env_modelmaker.SharedLibrary(target='#bin/modelmaker', source=sources)
+
+# #
+# shared_lib_shim = shared_lib[0].name.rsplit('.', 1)[0]
+# env.Append(LIBS=[shared_lib_shim])
+# env.Append(LIBPATH=['#bin'])
